@@ -5,9 +5,9 @@ part 'task.g.dart';
 @JsonSerializable()
 class Task {
   String description;
-  DateTime date;
+  String? details;
 
-  Task({required this.description, required this.date});
+  Task({required this.description, this.details});
 
   factory Task.fromJson(Map<String, dynamic> json) => _$TaskFromJson(json);
 

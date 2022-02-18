@@ -1,10 +1,9 @@
 import 'dart:io';
-import 'dart:convert';
-import 'package:args/command_runner.dart';
-import 'package:dcli/dcli.dart';
-import 'package:dart_date/dart_date.dart';
 
-import 'package:standup_app/src/entry/entry.dart';
+import 'package:args/command_runner.dart';
+import 'package:dart_date/dart_date.dart';
+import 'package:dcli/dcli.dart';
+import 'package:standup_app/src/models/models.dart';
 
 void commandRunner(List<String> args) {
   var runner =
@@ -45,14 +44,19 @@ class AddCommand extends Command {
   }
 
   @override
-  void run() {
+  void run() async {
     var entryDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
         : ask(green("Description:"), required: true);
 
     var dateOfEntry = DateTime.parse(argResults!['date']);
 
-    var task = Task(description: entryDescription, date: dateOfEntry);
-    print(json.encode(task));
+    var task = Task(description: entryDescription);
+
+    var data = await Data.loadDataFile();
+    data.days[dateOfEntry] = task;
+    await data.save();
+
+    stdout.writeln(green("Entry added"));
   }
 }
