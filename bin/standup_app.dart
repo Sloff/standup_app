@@ -1,5 +1,5 @@
-import 'dart:io';
+import 'package:standup_app/src/cli/command_runner.dart';
 
-void main() {
-  stdout.writeln('Hello World!');
+void main(List<String> args) {
+  commandRunner(args);
 }
