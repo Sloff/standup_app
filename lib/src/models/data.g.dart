@@ -9,7 +9,10 @@ part of 'data.dart';
 Data _$DataFromJson(Map<String, dynamic> json) => Data(
       days: (json['days'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(
-            DateTime.parse(k), Task.fromJson(e as Map<String, dynamic>)),
+            DateTime.parse(k),
+            (e as List<dynamic>)
+                .map((e) => Task.fromJson(e as Map<String, dynamic>))
+                .toList()),
       ),
     );
 

@@ -54,7 +54,10 @@ class AddCommand extends Command {
     var task = Task(description: entryDescription);
 
     var data = await Data.loadDataFile();
-    data.days[dateOfEntry] = task;
+
+    var taskList = data.days.putIfAbsent(dateOfEntry, (() => ([])));
+    taskList.add(task);
+
     await data.save();
 
     stdout.writeln(green("Entry added"));

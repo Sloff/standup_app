@@ -9,7 +9,7 @@ part 'data.g.dart';
 
 @JsonSerializable()
 class Data {
-  Map<DateTime, Task> days;
+  Map<DateTime, List<Task>> days;
 
   Data({required this.days});
 
