@@ -38,4 +38,14 @@ class Data {
 
     await dataFile.writeAsString(encoder.convert(this));
   }
+
+  static Future<void> addTask(
+      {required DateTime dateOfEntry, required Task task}) async {
+    var data = await Data.loadDataFile();
+
+    var taskList = data.days.putIfAbsent(dateOfEntry, (() => ([])));
+    taskList.add(task);
+
+    await data.save();
+  }
 }
