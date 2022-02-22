@@ -4,6 +4,8 @@ import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:dcli/dcli.dart';
 import 'package:standup_app/src/models/models.dart';
+import 'package:standup_app/src/utils/utils.dart' as utils;
+
 import './print.dart';
 
 void commandRunner(List<String> args) {
@@ -104,7 +106,7 @@ class ViewCommand extends Command {
 
     if (standupTasks.previousDayDate != null) {
       printHeadingAndList(
-          heading: "On ${standupTasks.previousDayDate} I worked on",
+          heading: utils.getRelativeDateHeading(standupTasks.previousDayDate!),
           list: standupTasks.previousDay.map((e) => e.description));
     }
 
