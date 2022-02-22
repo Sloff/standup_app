@@ -4,11 +4,13 @@ import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:dcli/dcli.dart';
 import 'package:standup_app/src/models/models.dart';
+import './print.dart';
 
 void commandRunner(List<String> args) {
   var runner =
       CommandRunner("standup", "Assists with keeping track of work for standup")
-        ..addCommand(AddCommand());
+        ..addCommand(AddCommand())
+        ..addCommand(ViewCommand());
 
   runner.run(args).catchError((error) {
     switch (error.runtimeType) {
@@ -56,5 +58,58 @@ class AddCommand extends Command {
     await Data.addTask(dateOfEntry: dateOfEntry, task: task);
 
     stdout.writeln(green("Entry added"));
+  }
+}
+
+class ViewCommand extends Command {
+  @override
+  final name = "view";
+
+  @override
+  final aliases = ["v"];
+
+  @override
+  final description = "View entries";
+
+  ViewCommand() {
+    argParser.addOption(
+      "date",
+      abbr: 'd',
+      help: 'The date of the entry.',
+      valueHelp: 'YYYY-MM-DD',
+    );
+  }
+
+  @override
+  void run() async {
+    if (argResults?['date'] != null) {
+      return _viewTasksOnDate();
+    }
+
+    return _viewTasksForStandup();
+  }
+
+  void _viewTasksOnDate() async {
+    var date = DateTime.parse(argResults!['date']);
+
+    List<Task> tasks = await Data.getTasksOnDate(date: date);
+
+    printHeadingAndList(
+        heading: date.format("yyyy-MM-dd"),
+        list: tasks.map((task) => task.description));
+  }
+
+  void _viewTasksForStandup() async {
+    var standupTasks = await Data.getTasksForStandup();
+
+    if (standupTasks.previousDayDate != null) {
+      printHeadingAndList(
+          heading: "On ${standupTasks.previousDayDate} I worked on",
+          list: standupTasks.previousDay.map((e) => e.description));
+    }
+
+    printHeadingAndList(
+        heading: "Today I'm working on",
+        list: standupTasks.today.map((e) => e.description));
   }
 }

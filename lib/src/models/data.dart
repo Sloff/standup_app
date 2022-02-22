@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dart_date/dart_date.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import './task.dart';
@@ -41,11 +42,51 @@ class Data {
 
   static Future<void> addTask(
       {required DateTime dateOfEntry, required Task task}) async {
-    var data = await Data.loadDataFile();
+    Data data = await Data.loadDataFile();
 
     var taskList = data.days.putIfAbsent(dateOfEntry, (() => ([])));
     taskList.add(task);
 
     await data.save();
   }
+
+  static Future<List<Task>> getTasksOnDate({required DateTime date}) async {
+    Data data = await Data.loadDataFile();
+
+    return data.days[date] ?? [];
+  }
+
+  static Future<StandupInfo> getTasksForStandup() async {
+    Data data = await Data.loadDataFile();
+
+    List<DateTime> dates = data.days.keys.toList();
+    dates.sort();
+
+    var pastDateIterator =
+        dates.reversed.skipWhile((date) => date.isFuture || date.isToday);
+
+    DateTime? previousDayDate =
+        pastDateIterator.isNotEmpty ? pastDateIterator.first : null;
+
+    List<Task> previousDay =
+        previousDayDate == null ? [] : data.days[previousDayDate] ?? [];
+
+    List<Task> today = data.days[Date.startOfToday] ?? [];
+
+    return StandupInfo(
+        today: today,
+        previousDay: previousDay,
+        previousDayDate: previousDayDate);
+  }
+}
+
+class StandupInfo {
+  final List<Task> today;
+  final List<Task> previousDay;
+  final DateTime? previousDayDate;
+
+  StandupInfo(
+      {required this.today,
+      required this.previousDay,
+      required this.previousDayDate});
 }
