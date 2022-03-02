@@ -41,6 +41,11 @@ class Data {
       return _cache!;
     }
 
+    if (_cache != null) {
+      stdout.writeln(
+          'WARNING: Reading data file again because it was modified'.red());
+    }
+
     stdout.writeln('DEBUG: File read'.blue());
     final jsonData = await dataFile.readAsString();
 
