@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:dart_date/dart_date.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tint/tint.dart';
+import 'package:uuid/uuid.dart';
 
 import './task.dart';
 
@@ -10,32 +12,40 @@ part 'data.g.dart';
 
 @JsonSerializable()
 class Data {
-  Map<DateTime, List<Task>> days;
+  Map<DateTime, List<String>> days;
+  Map<String, Task> tasks;
 
   static Data? _cache;
+  static DateTime? _timeModified;
 
-  Data({required this.days});
+  Data({required this.days, required this.tasks});
 
-  Data.empty() : days = {};
+  Data.empty()
+      : days = {},
+        tasks = {};
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
   Map<String, dynamic> toJson() => _$DataToJson(this);
 
   static Future<Data> loadDataFile() async {
-    if (_cache != null) {
-      return _cache!;
-    }
-
     final dataFile = File('data.json');
 
     if (!await dataFile.exists()) {
       return Data.empty();
     }
 
+    DateTime fileModified = await dataFile.lastModified();
+
+    if (_cache != null && fileModified == _timeModified) {
+      return _cache!;
+    }
+
+    stdout.writeln('DEBUG: File read'.blue());
     final jsonData = await dataFile.readAsString();
 
     _cache = Data.fromJson(json.decode(jsonData));
+    _timeModified = fileModified;
     return _cache!;
   }
 
@@ -51,32 +61,40 @@ class Data {
       {required DateTime dateOfEntry, required Task task}) async {
     Data data = await Data.loadDataFile();
 
-    var taskList = data.days.putIfAbsent(dateOfEntry, (() => ([])));
-    taskList.add(task);
+    String newTaskId = const Uuid().v4();
+
+    var taskIds = data.days.putIfAbsent(dateOfEntry, (() => ([])));
+    taskIds.add(newTaskId);
+
+    data.tasks[newTaskId] = task;
 
     await data.save();
   }
 
-  static Future<List<Task>> getTasksOnDate({required DateTime date}) async {
+  static Future<List<TaskWithId>> getTasksOnDate(
+      {required DateTime date}) async {
     Data data = await Data.loadDataFile();
 
-    return data.days[date] ?? [];
+    return (data.days[date] ?? [])
+        .map((taskId) =>
+            TaskWithId.fromTask(id: taskId, task: data.tasks[taskId]!))
+        .toList();
   }
 
-  static Future<void> editTaskOnDate(
-      {required DateTime date, required int index, required Task task}) async {
+  static Future<void> editTaskOnDate({required TaskWithId task}) async {
     Data data = await Data.loadDataFile();
 
-    data.days[date]![index] = task;
+    data.tasks[task.id] = task;
 
     await data.save();
   }
 
   static Future<void> removeTaskOnDate(
-      {required DateTime date, required int index}) async {
+      {required DateTime date, required String taskId}) async {
     Data data = await Data.loadDataFile();
 
-    data.days[date]!.removeAt(index);
+    data.days[date]!.remove(taskId);
+    data.tasks.remove(taskId);
 
     await data.save();
   }
@@ -93,10 +111,15 @@ class Data {
     DateTime? previousDayDate =
         pastDateIterator.isNotEmpty ? pastDateIterator.first : null;
 
-    List<Task> previousDay =
-        previousDayDate == null ? [] : data.days[previousDayDate] ?? [];
+    List<Task> previousDay = previousDayDate == null
+        ? []
+        : (data.days[previousDayDate] ?? [])
+            .map((taskId) => data.tasks[taskId]!)
+            .toList();
 
-    List<Task> today = data.days[Date.startOfToday] ?? [];
+    List<Task> today = (data.days[Date.startOfToday] ?? [])
+        .map((taskId) => data.tasks[taskId]!)
+        .toList();
 
     return StandupInfo(
         today: today,

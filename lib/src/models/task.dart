@@ -13,3 +13,15 @@ class Task {
 
   Map<String, dynamic> toJson() => _$TaskToJson(this);
 }
+
+class TaskWithId extends Task {
+  String id;
+
+  TaskWithId({required this.id, required String description, details})
+      : super(description: description, details: details);
+
+  factory TaskWithId.fromTask({required String id, required Task task}) {
+    return TaskWithId(
+        id: id, description: task.description, details: task.details);
+  }
+}

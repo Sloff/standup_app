@@ -144,7 +144,7 @@ class EditCommand extends Command {
   void run() async {
     DateTime dateOfEntryToEdit = DateTime.parse(argResults!['date']);
 
-    List<Task> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
+    List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
 
     if (tasks.isEmpty) {
       stdout.writeln('Nothing to edit'.yellow());
@@ -166,9 +166,8 @@ class EditCommand extends Command {
             .interact();
 
     await Data.editTaskOnDate(
-        date: dateOfEntryToEdit,
-        index: entryToEditIndex,
-        task: Task(description: newDescription));
+        task: TaskWithId(
+            id: tasks[entryToEditIndex].id, description: newDescription));
 
     stdout.writeln('Entry updated'.green());
   }
@@ -196,7 +195,8 @@ class RemoveCommand extends Command {
   void run() async {
     DateTime dateOfEntryToRemove = DateTime.parse(argResults!['date']);
 
-    List<Task> tasks = await Data.getTasksOnDate(date: dateOfEntryToRemove);
+    List<TaskWithId> tasks =
+        await Data.getTasksOnDate(date: dateOfEntryToRemove);
 
     if (tasks.isEmpty) {
       stdout.writeln('Nothing to remove'.yellow());
@@ -211,7 +211,7 @@ class RemoveCommand extends Command {
 
     await Data.removeTaskOnDate(
       date: dateOfEntryToRemove,
-      index: entryToRemoveIndex,
+      taskId: tasks[entryToRemoveIndex].id,
     );
 
     stdout.writeln('Entry removed'.green());

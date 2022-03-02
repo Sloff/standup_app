@@ -8,14 +8,15 @@ part of 'data.dart';
 
 Data _$DataFromJson(Map<String, dynamic> json) => Data(
       days: (json['days'] as Map<String, dynamic>).map(
-        (k, e) => MapEntry(
-            DateTime.parse(k),
-            (e as List<dynamic>)
-                .map((e) => Task.fromJson(e as Map<String, dynamic>))
-                .toList()),
+        (k, e) => MapEntry(DateTime.parse(k),
+            (e as List<dynamic>).map((e) => e as String).toList()),
+      ),
+      tasks: (json['tasks'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry(k, Task.fromJson(e as Map<String, dynamic>)),
       ),
     );
 
 Map<String, dynamic> _$DataToJson(Data instance) => <String, dynamic>{
       'days': instance.days.map((k, e) => MapEntry(k.toIso8601String(), e)),
+      'tasks': instance.tasks,
     };
