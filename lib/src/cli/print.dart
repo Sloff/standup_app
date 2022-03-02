@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:dcli/dcli.dart';
+import 'package:tint/tint.dart';
 
 void printHeadingAndList(
     {required String heading,
@@ -10,11 +10,11 @@ void printHeadingAndList(
     stdout.writeln();
   }
 
-  stdout.writeln(green("$heading:"));
+  stdout.writeln('$heading:'.green());
 
   if (list.isEmpty) {
-    stdout.writeln(yellow("Nothing yet..."));
+    stdout.writeln('Nothing yet...'.yellow());
   } else {
-    list.map((e) => "  - ${e}").forEach(stdout.writeln);
+    list.map((e) => '  - ${e}').forEach(stdout.writeln);
   }
 }

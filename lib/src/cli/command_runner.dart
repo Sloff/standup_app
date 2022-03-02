@@ -2,17 +2,19 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
-import 'package:dcli/dcli.dart';
+import 'package:interact/interact.dart';
 import 'package:standup_app/src/models/models.dart';
 import 'package:standup_app/src/utils/utils.dart' as utils;
+import 'package:tint/tint.dart';
 
 import './print.dart';
 
 void commandRunner(List<String> args) {
   var runner =
-      CommandRunner("standup", "Assists with keeping track of work for standup")
+      CommandRunner('standup', 'Assists with keeping track of work for standup')
         ..addCommand(AddCommand())
-        ..addCommand(ViewCommand());
+        ..addCommand(ViewCommand())
+        ..addCommand(EditCommand());
 
   runner.run(args).catchError((error) {
     switch (error.runtimeType) {
@@ -23,7 +25,7 @@ void commandRunner(List<String> args) {
         }
       case FormatException:
         {
-          stderr.writeln(red('${error.message}: ${error.source}'));
+          stderr.writeln('${error.message}: ${error.source}'.red());
           exit(64);
         }
       default:
@@ -34,13 +36,16 @@ void commandRunner(List<String> args) {
 
 class AddCommand extends Command {
   @override
-  final name = "add";
+  final name = 'add';
 
   @override
-  final description = "Create a new entry";
+  final aliases = ['a'];
+
+  @override
+  final description = 'Create a new entry';
 
   AddCommand() {
-    argParser.addOption("date",
+    argParser.addOption('date',
         abbr: 'd',
         help: 'The date of the entry.',
         valueHelp: 'YYYY-MM-DD',
@@ -51,7 +56,7 @@ class AddCommand extends Command {
   void run() async {
     var entryDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
-        : ask(green("Description:"), required: true);
+        : Input(prompt: 'Description:', validator: isRequired).interact();
 
     var dateOfEntry = DateTime.parse(argResults!['date']);
 
@@ -59,23 +64,23 @@ class AddCommand extends Command {
 
     await Data.addTask(dateOfEntry: dateOfEntry, task: task);
 
-    stdout.writeln(green("Entry added"));
+    stdout.writeln('Entry added'.green());
   }
 }
 
 class ViewCommand extends Command {
   @override
-  final name = "view";
+  final name = 'view';
 
   @override
-  final aliases = ["v"];
+  final aliases = ['v'];
 
   @override
-  final description = "View entries";
+  final description = 'View entries';
 
   ViewCommand() {
     argParser.addOption(
-      "date",
+      'date',
       abbr: 'd',
       help: 'The date of the entry.',
       valueHelp: 'YYYY-MM-DD',
@@ -97,7 +102,7 @@ class ViewCommand extends Command {
     List<Task> tasks = await Data.getTasksOnDate(date: date);
 
     printHeadingAndList(
-        heading: date.format("yyyy-MM-dd"),
+        heading: date.format('yyyy-MM-dd'),
         list: tasks.map((task) => task.description));
   }
 
@@ -114,4 +119,64 @@ class ViewCommand extends Command {
         heading: "Today I'm working on",
         list: standupTasks.today.map((e) => e.description));
   }
+}
+
+class EditCommand extends Command {
+  @override
+  final name = 'edit';
+
+  @override
+  final aliases = ['e'];
+
+  @override
+  final description = 'Edit an Entry';
+
+  EditCommand() {
+    argParser.addOption('date',
+        abbr: 'd',
+        help: 'The date of the entry.',
+        valueHelp: 'YYYY-MM-DD',
+        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+  }
+
+  @override
+  void run() async {
+    DateTime dateOfEntryToEdit = DateTime.parse(argResults!['date']);
+
+    List<Task> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
+
+    if (tasks.isEmpty) {
+      stdout.writeln('Nothing to edit');
+      return;
+    }
+
+    stdout.writeln('');
+    int entryToEditIndex = Select(
+      prompt: 'Please select an entry:',
+      options: tasks.map((task) => task.description).toList(),
+    ).interact();
+
+    String newDescription = argResults?.rest.isNotEmpty ?? false
+        ? argResults!.rest.join(' ')
+        : Input(
+                prompt: 'New Description:',
+                initialText: tasks[entryToEditIndex].description,
+                validator: isRequired)
+            .interact();
+
+    await Data.editTaskOnDate(
+        date: dateOfEntryToEdit,
+        index: entryToEditIndex,
+        task: Task(description: newDescription));
+
+    stdout.writeln('Entry updated'.green());
+  }
+}
+
+bool isRequired(String val) {
+  if (val.isNotEmpty) {
+    return true;
+  }
+
+  throw ValidationError('A description is required');
 }

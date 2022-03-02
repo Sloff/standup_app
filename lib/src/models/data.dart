@@ -12,6 +12,8 @@ part 'data.g.dart';
 class Data {
   Map<DateTime, List<Task>> days;
 
+  static Data? _cache;
+
   Data({required this.days});
 
   Data.empty() : days = {};
@@ -21,6 +23,10 @@ class Data {
   Map<String, dynamic> toJson() => _$DataToJson(this);
 
   static Future<Data> loadDataFile() async {
+    if (_cache != null) {
+      return _cache!;
+    }
+
     final dataFile = File('data.json');
 
     if (!await dataFile.exists()) {
@@ -29,7 +35,8 @@ class Data {
 
     final jsonData = await dataFile.readAsString();
 
-    return Data.fromJson(json.decode(jsonData));
+    _cache = Data.fromJson(json.decode(jsonData));
+    return _cache!;
   }
 
   Future<void> save() async {
@@ -54,6 +61,15 @@ class Data {
     Data data = await Data.loadDataFile();
 
     return data.days[date] ?? [];
+  }
+
+  static Future<void> editTaskOnDate(
+      {required DateTime date, required int index, required Task task}) async {
+    Data data = await Data.loadDataFile();
+
+    data.days[date]![index] = task;
+
+    await data.save();
   }
 
   static Future<StandupInfo> getTasksForStandup() async {
