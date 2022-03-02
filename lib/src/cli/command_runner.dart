@@ -3,10 +3,10 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:interact/interact.dart';
-import 'package:standup_app/src/models/models.dart';
-import 'package:standup_app/src/utils/utils.dart' as utils;
 import 'package:tint/tint.dart';
 
+import '/src/models/models.dart';
+import '/src/utils/utils.dart' as utils;
 import './print.dart';
 
 void commandRunner(List<String> args) {

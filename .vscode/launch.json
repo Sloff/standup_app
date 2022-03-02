@@ -5,6 +5,12 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Dart: Attach to Process",
+      "type": "dart",
+      "request": "attach",
+      "program": "bin/standup_app.dart"
+    },
+    {
       "name": "Dart",
       "type": "dart",
       "request": "launch",
