@@ -14,7 +14,8 @@ void commandRunner(List<String> args) {
       CommandRunner('standup', 'Assists with keeping track of work for standup')
         ..addCommand(AddCommand())
         ..addCommand(ViewCommand())
-        ..addCommand(EditCommand());
+        ..addCommand(EditCommand())
+        ..addCommand(RemoveCommand());
 
   runner.run(args).catchError((error) {
     switch (error.runtimeType) {
@@ -146,7 +147,7 @@ class EditCommand extends Command {
     List<Task> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
 
     if (tasks.isEmpty) {
-      stdout.writeln('Nothing to edit');
+      stdout.writeln('Nothing to edit'.yellow());
       return;
     }
 
@@ -170,6 +171,50 @@ class EditCommand extends Command {
         task: Task(description: newDescription));
 
     stdout.writeln('Entry updated'.green());
+  }
+}
+
+class RemoveCommand extends Command {
+  @override
+  final name = 'remove';
+
+  @override
+  final aliases = ['r', 'delete', 'd'];
+
+  @override
+  final description = 'Remove an Entry';
+
+  RemoveCommand() {
+    argParser.addOption('date',
+        abbr: 'd',
+        help: 'The date of the entry.',
+        valueHelp: 'YYYY-MM-DD',
+        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+  }
+
+  @override
+  void run() async {
+    DateTime dateOfEntryToRemove = DateTime.parse(argResults!['date']);
+
+    List<Task> tasks = await Data.getTasksOnDate(date: dateOfEntryToRemove);
+
+    if (tasks.isEmpty) {
+      stdout.writeln('Nothing to remove'.yellow());
+      return;
+    }
+
+    stdout.writeln('');
+    int entryToRemoveIndex = Select(
+      prompt: 'Please select an entry to remove:',
+      options: tasks.map((task) => task.description).toList(),
+    ).interact();
+
+    await Data.removeTaskOnDate(
+      date: dateOfEntryToRemove,
+      index: entryToRemoveIndex,
+    );
+
+    stdout.writeln('Entry removed'.green());
   }
 }
 

@@ -72,6 +72,15 @@ class Data {
     await data.save();
   }
 
+  static Future<void> removeTaskOnDate(
+      {required DateTime date, required int index}) async {
+    Data data = await Data.loadDataFile();
+
+    data.days[date]!.removeAt(index);
+
+    await data.save();
+  }
+
   static Future<StandupInfo> getTasksForStandup() async {
     Data data = await Data.loadDataFile();
 
