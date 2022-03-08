@@ -101,6 +101,10 @@ class Data {
     data.days[date]!.remove(taskId);
     data.tasks.remove(taskId);
 
+    if (data.days[date]!.isEmpty) {
+      data.days.remove(date);
+    }
+
     await data.save();
   }
 
