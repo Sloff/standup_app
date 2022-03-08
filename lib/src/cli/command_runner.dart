@@ -189,6 +189,11 @@ class RemoveCommand extends Command {
         help: 'The date of the entry.',
         valueHelp: 'YYYY-MM-DD',
         defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+    argParser.addOption(
+      'index',
+      abbr: 'i',
+      help: 'The zero based index of the entry',
+    );
   }
 
   @override
@@ -203,11 +208,23 @@ class RemoveCommand extends Command {
       return;
     }
 
-    stdout.writeln('');
-    int entryToRemoveIndex = Select(
-      prompt: 'Please select an entry to remove:',
-      options: tasks.map((task) => task.description).toList(),
-    ).interact();
+    // TODO: Make this logic general between remove & edit
+    int entryToRemoveIndex;
+
+    if ((argResults?['index'] ?? '').isNotEmpty) {
+      entryToRemoveIndex = int.parse(argResults!['index']);
+    } else {
+      stdout.writeln('');
+      entryToRemoveIndex = Select(
+        prompt: 'Please select an entry to remove:',
+        options: tasks.map((task) => task.description).toList(),
+      ).interact();
+    }
+
+    if (entryToRemoveIndex < 0 || entryToRemoveIndex >= tasks.length) {
+      stdout.writeln('Index provided out of bounds'.yellow());
+      return;
+    }
 
     await Data.removeTaskOnDate(
       date: dateOfEntryToRemove,
