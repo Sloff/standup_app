@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:interact/interact.dart';
@@ -27,6 +28,11 @@ void commandRunner(List<String> args) {
       case FormatException:
         {
           stderr.writeln('${error.message}: ${error.source}'.red());
+          exit(64);
+        }
+      case RangeError:
+        {
+          stderr.writeln('Index provided out of bounds'.yellow());
           exit(64);
         }
       default:
@@ -133,11 +139,18 @@ class EditCommand extends Command {
   final description = 'Edit an Entry';
 
   EditCommand() {
-    argParser.addOption('date',
-        abbr: 'd',
-        help: 'The date of the entry.',
-        valueHelp: 'YYYY-MM-DD',
-        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+    argParser.addOption(
+      'date',
+      abbr: 'd',
+      help: 'The date of the entry.',
+      valueHelp: 'YYYY-MM-DD',
+      defaultsTo: DateTime.now().format('yyyy-MM-dd'),
+    );
+    argParser.addOption(
+      'index',
+      abbr: 'i',
+      help: 'The zero based index of the entry',
+    );
   }
 
   @override
@@ -152,10 +165,7 @@ class EditCommand extends Command {
     }
 
     stdout.writeln('');
-    int entryToEditIndex = Select(
-      prompt: 'Please select an entry:',
-      options: tasks.map((task) => task.description).toList(),
-    ).interact();
+    int entryToEditIndex = selectedEntry(argResults, tasks);
 
     String newDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
@@ -208,23 +218,7 @@ class RemoveCommand extends Command {
       return;
     }
 
-    // TODO: Make this logic general between remove & edit
-    int entryToRemoveIndex;
-
-    if ((argResults?['index'] ?? '').isNotEmpty) {
-      entryToRemoveIndex = int.parse(argResults!['index']);
-    } else {
-      stdout.writeln('');
-      entryToRemoveIndex = Select(
-        prompt: 'Please select an entry to remove:',
-        options: tasks.map((task) => task.description).toList(),
-      ).interact();
-    }
-
-    if (entryToRemoveIndex < 0 || entryToRemoveIndex >= tasks.length) {
-      stdout.writeln('Index provided out of bounds'.yellow());
-      return;
-    }
+    int entryToRemoveIndex = selectedEntry(argResults, tasks);
 
     await Data.removeTaskOnDate(
       date: dateOfEntryToRemove,
@@ -241,4 +235,20 @@ bool isRequired(String val) {
   }
 
   throw ValidationError('A description is required');
+}
+
+int selectedEntry(ArgResults? argResults, List<Task> tasks) {
+  int selectedEntryIndex;
+
+  if ((argResults?['index'] ?? '').isNotEmpty) {
+    selectedEntryIndex = int.parse(argResults!['index']);
+  } else {
+    stdout.writeln('');
+    selectedEntryIndex = Select(
+      prompt: 'Please select an entry:',
+      options: tasks.map((task) => task.description).toList(),
+    ).interact();
+  }
+
+  return selectedEntryIndex;
 }
