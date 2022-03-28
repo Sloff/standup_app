@@ -60,6 +60,7 @@ class Data {
     JsonEncoder encoder = const JsonEncoder.withIndent('  ');
 
     await dataFile.writeAsString(encoder.convert(this));
+    _timeModified = await dataFile.lastModified();
   }
 
   static Future<void> addTask(

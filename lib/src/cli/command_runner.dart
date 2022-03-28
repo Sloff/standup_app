@@ -63,7 +63,7 @@ class AddCommand extends Command {
   void run() async {
     var entryDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
-        : Input(prompt: 'Description:', validator: isRequired).interact();
+        : Input(prompt: 'Description:', validator: _isRequired).interact();
 
     var dateOfEntry = DateTime.parse(argResults!['date']);
 
@@ -71,7 +71,7 @@ class AddCommand extends Command {
 
     await Data.addTask(dateOfEntry: dateOfEntry, task: task);
 
-    stdout.writeln('Entry added'.green());
+    _printTasksOnDate(dateOfEntry);
   }
 }
 
@@ -97,20 +97,10 @@ class ViewCommand extends Command {
   @override
   void run() async {
     if (argResults?['date'] != null) {
-      return _viewTasksOnDate();
+      return _printTasksOnDate(DateTime.parse(argResults!['date']));
     }
 
     return _viewTasksForStandup();
-  }
-
-  void _viewTasksOnDate() async {
-    var date = DateTime.parse(argResults!['date']);
-
-    List<Task> tasks = await Data.getTasksOnDate(date: date);
-
-    printHeadingAndList(
-        heading: date.format('yyyy-MM-dd'),
-        list: tasks.map((task) => task.description));
   }
 
   void _viewTasksForStandup() async {
@@ -165,21 +155,21 @@ class EditCommand extends Command {
     }
 
     stdout.writeln('');
-    int entryToEditIndex = selectedEntry(argResults, tasks);
+    int entryToEditIndex = _selectedEntry(argResults, tasks);
 
     String newDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
         : Input(
                 prompt: 'New Description:',
                 initialText: tasks[entryToEditIndex].description,
-                validator: isRequired)
+                validator: _isRequired)
             .interact();
 
     await Data.editTaskOnDate(
         task: TaskWithId(
             id: tasks[entryToEditIndex].id, description: newDescription));
 
-    stdout.writeln('Entry updated'.green());
+    _printTasksOnDate(dateOfEntryToEdit);
   }
 }
 
@@ -218,18 +208,26 @@ class RemoveCommand extends Command {
       return;
     }
 
-    int entryToRemoveIndex = selectedEntry(argResults, tasks);
+    int entryToRemoveIndex = _selectedEntry(argResults, tasks);
 
     await Data.removeTaskOnDate(
       date: dateOfEntryToRemove,
       taskId: tasks[entryToRemoveIndex].id,
     );
 
-    stdout.writeln('Entry removed'.green());
+    _printTasksOnDate(dateOfEntryToRemove);
   }
 }
 
-bool isRequired(String val) {
+void _printTasksOnDate(DateTime date) async {
+  List<Task> tasks = await Data.getTasksOnDate(date: date);
+
+  printHeadingAndList(
+      heading: date.format('yyyy-MM-dd'),
+      list: tasks.map((task) => task.description));
+}
+
+bool _isRequired(String val) {
   if (val.isNotEmpty) {
     return true;
   }
@@ -237,7 +235,7 @@ bool isRequired(String val) {
   throw ValidationError('A description is required');
 }
 
-int selectedEntry(ArgResults? argResults, List<Task> tasks) {
+int _selectedEntry(ArgResults? argResults, List<Task> tasks) {
   int selectedEntryIndex;
 
   if ((argResults?['index'] ?? '').isNotEmpty) {
