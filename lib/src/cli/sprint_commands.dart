@@ -31,31 +31,54 @@ class NewCommand extends Command {
   void run() async {
     var sprintName = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
-        : Input(prompt: 'Sprint name:', validator: isRequired).interact();
+        : null;
 
-    var dateStart = DateTime.parse(argResults?['dateStart'] != null
-        ? argResults!['dateStart']
-        : Input(
-                prompt: 'Start Date:',
-                validator: isRequired,
-                initialText: DateTime.now().format('yyyy-MM-dd'))
-            .interact());
-
-    var dateEnd = DateTime.parse(argResults?['dateEnd'] != null
-        ? argResults!['dateEnd']
-        : Input(
-                prompt: 'End Date:',
-                validator: isRequired,
-                initialText:
-                    (dateStart + const Duration(days: 14)).format('yyyy-MM-dd'))
-            .interact());
-
-    var sprint = Sprint(
+    var sprint = buildNewSprint(
         name: sprintName,
-        duration: SprintBounds(start: dateStart, end: dateEnd));
+        dateStartString: argResults?['dateStart'],
+        dateEndString: argResults?['dateEnd']);
 
     await Data.newSprint(sprint: sprint);
 
     stdout.writeln('Sprint ${sprint.name} started'.green());
   }
+}
+
+Future<void> noActiveSprint() async {
+  bool createNewSprint = Confirm(
+    prompt: 'No current active Sprint, do you want to create a new Sprint?',
+    defaultValue: true,
+    waitForNewLine: true,
+  ).interact();
+
+  if (createNewSprint) {
+    Sprint sprint = buildNewSprint();
+    await Data.newSprint(sprint: sprint);
+
+    stdout.writeln('Sprint ${sprint.name} started'.green());
+  }
+}
+
+Sprint buildNewSprint(
+    {String? name, String? dateStartString, String? dateEndString}) {
+  var sprintName =
+      name ?? Input(prompt: 'Sprint name', validator: isRequired).interact();
+
+  var dateStart = DateTime.parse(dateStartString ??
+      Input(
+              prompt: 'Start Date',
+              validator: isRequired,
+              initialText: DateTime.now().format('yyyy-MM-dd'))
+          .interact());
+
+  var dateEnd = DateTime.parse(dateEndString ??
+      Input(
+              prompt: 'End Date',
+              validator: isRequired,
+              initialText:
+                  (dateStart + const Duration(days: 14)).format('yyyy-MM-dd'))
+          .interact());
+
+  return Sprint(
+      name: sprintName, duration: SprintBounds(start: dateStart, end: dateEnd));
 }

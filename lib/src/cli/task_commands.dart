@@ -9,6 +9,7 @@ import 'package:tint/tint.dart';
 import '/src/models/models.dart';
 import '/src/utils/utils.dart' as utils;
 import './print.dart';
+import './sprint_commands.dart';
 import './utils.dart';
 
 class AddCommand extends Command {
@@ -31,6 +32,10 @@ class AddCommand extends Command {
 
   @override
   void run() async {
+    if (await Data.sprintStatus() != SprintStatus.active) {
+      await noActiveSprint();
+    }
+
     var entryDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
         : Input(prompt: 'Description:', validator: isRequired).interact();

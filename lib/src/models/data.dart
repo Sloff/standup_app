@@ -11,6 +11,8 @@ import './sprint.dart';
 
 part 'data.g.dart';
 
+enum SprintStatus { active, inactive, nil }
+
 @JsonSerializable()
 class Data {
   Map<DateTime, List<String>> days;
@@ -139,6 +141,20 @@ class Data {
         today: today,
         previousDay: previousDay,
         previousDayDate: previousDayDate);
+  }
+
+  static Future<SprintStatus> sprintStatus() async {
+    Data data = await Data.loadDataFile();
+
+    if (data.currentSprint == null) {
+      return SprintStatus.nil;
+    }
+
+    if (data.currentSprint!.duration.end.isPast) {
+      return SprintStatus.inactive;
+    }
+
+    return SprintStatus.active;
   }
 
   static Future<void> newSprint({required Sprint sprint}) async {
