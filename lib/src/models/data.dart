@@ -176,6 +176,20 @@ class Data {
     await data.save();
   }
 
+  static Future<Sprint?> getSprintDetails() async {
+    Data data = await Data.loadDataFile();
+
+    return data.currentSprint;
+  }
+
+  static Future<void> editSprint({required Sprint sprint}) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint = sprint;
+
+    await data.save();
+  }
+
   static Future<List<String>> addGoal(String goal) async {
     Data data = await Data.loadDataFile();
 

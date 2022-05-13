@@ -46,6 +46,86 @@ class NewCommand extends Command {
   }
 }
 
+class SprintCommand extends Command {
+  @override
+  final name = 'sprint';
+
+  @override
+  final aliases = ['s'];
+
+  @override
+  final description = 'Sprint specific functionality';
+
+  SprintCommand() {
+    addSubcommand(NewCommand());
+    addSubcommand(EditSprintCommand());
+  }
+}
+
+class EditSprintCommand extends Command {
+  @override
+  final name = 'edit';
+
+  @override
+  final aliases = ['e'];
+
+  @override
+  final description = "Edit a Sprint's details";
+
+  EditSprintCommand() {
+    argParser.addOption('dateStart',
+        abbr: 's',
+        help: 'The start date of the Sprint',
+        valueHelp: 'YYYY-MM-DD');
+    argParser.addOption('dateEnd',
+        abbr: 'e', help: 'The end date of the Sprint', valueHelp: 'YYYY-MM-DD');
+  }
+
+  @override
+  Future<void> run() async {
+    var currentSprint = await Data.getSprintDetails();
+
+    if (currentSprint == null) {
+      stdout.writeln('No active Sprint'.yellow());
+      return;
+    }
+
+    var sprintName = argResults?.rest.isNotEmpty ?? false
+        ? argResults!.rest.join(' ')
+        : Input(
+                prompt: 'Sprint name',
+                validator: isRequired,
+                initialText: currentSprint.name)
+            .interact();
+
+    var dateStart = DateTime.parse(argResults?['dateStart'] ??
+        Input(
+                prompt: 'Start Date',
+                validator: isRequired,
+                initialText: currentSprint.duration.start.format('yyyy-MM-dd'))
+            .interact());
+
+    var dateEnd = DateTime.parse(argResults?['dateEnd'] ??
+        Input(
+                prompt: 'End Date',
+                validator: isRequired,
+                initialText:
+                    (dateStart + const Duration(days: 14)).format('yyyy-MM-dd'))
+            .interact());
+
+    var sprint = Sprint(
+        name: sprintName,
+        duration: SprintBounds(start: dateStart, end: dateEnd),
+        goals: currentSprint.goals,
+        wentWell: currentSprint.wentWell,
+        improve: currentSprint.improve);
+
+    await Data.editSprint(sprint: sprint);
+
+    stdout.writeln('Sprint ${sprint.name} updated'.green());
+  }
+}
+
 Future<void> noActiveSprint() async {
   bool createNewSprint = Confirm(
     prompt: 'No current active Sprint, do you want to create a new Sprint?',

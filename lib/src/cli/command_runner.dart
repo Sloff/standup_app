@@ -13,7 +13,8 @@ void commandRunner(List<String> args) {
         ..addCommand(general.ViewCommand())
         ..addCommand(general.EditCommand())
         ..addCommand(general.RemoveCommand())
-        ..addCommand(sprint.NewCommand());
+        ..addCommand(sprint.NewCommand())
+        ..addCommand(sprint.SprintCommand());
 
   runner.run(args).catchError((error) {
     switch (error.runtimeType) {
