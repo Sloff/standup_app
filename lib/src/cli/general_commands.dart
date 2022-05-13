@@ -24,7 +24,11 @@ class AddCommand extends Command {
     argParser.addFlag('goal',
         abbr: 'g', negatable: false, help: 'Add a Goal entry');
     argParser.addFlag('well',
-        abbr: 'w', negatable: false, help: 'Add something that Went Well');
+        abbr: 'w', negatable: false, help: 'Add something that went well');
+    argParser.addFlag('improve',
+        abbr: 'i',
+        negatable: false,
+        help: 'Add something that could be improved');
   }
 
   @override
@@ -39,6 +43,10 @@ class AddCommand extends Command {
 
     if (argResults!['well']) {
       return sprint.addWentWell(argResults);
+    }
+
+    if (argResults!['improve']) {
+      return sprint.addImprove(argResults);
     }
 
     return task.add(argResults);
@@ -67,7 +75,9 @@ class ViewCommand extends Command {
     argParser.addFlag('well',
         abbr: 'w',
         negatable: false,
-        help: 'View what Went Well during the Sprint');
+        help: 'View what went well during the Sprint');
+    argParser.addFlag('improve',
+        abbr: 'i', negatable: false, help: 'View what could be improved');
   }
 
   @override
@@ -78,6 +88,10 @@ class ViewCommand extends Command {
 
     if (argResults!['well']) {
       return sprint.viewWentWell();
+    }
+
+    if (argResults!['improve']) {
+      return sprint.viewImprove();
     }
 
     return task.view(argResults);
@@ -104,13 +118,17 @@ class EditCommand extends Command {
     );
     argParser.addOption(
       'index',
-      abbr: 'i',
+      abbr: 'n',
       help: 'The zero based index of the entry',
     );
     argParser.addFlag('goal',
         abbr: 'g', negatable: false, help: 'Edit a Goal entry');
     argParser.addFlag('well',
-        abbr: 'w', negatable: false, help: 'Edit something that Went Well');
+        abbr: 'w', negatable: false, help: 'Edit something that went well');
+    argParser.addFlag('improve',
+        abbr: 'i',
+        negatable: false,
+        help: 'Edit something that could be improved');
   }
 
   @override
@@ -121,6 +139,10 @@ class EditCommand extends Command {
 
     if (argResults!['well']) {
       return sprint.editWentWell(argResults);
+    }
+
+    if (argResults!['improve']) {
+      return sprint.editImprove(argResults);
     }
 
     return task.edit(argResults);
@@ -145,13 +167,17 @@ class RemoveCommand extends Command {
         defaultsTo: DateTime.now().format('yyyy-MM-dd'));
     argParser.addOption(
       'index',
-      abbr: 'i',
+      abbr: 'n',
       help: 'The zero based index of the entry',
     );
     argParser.addFlag('goal',
         abbr: 'g', negatable: false, help: 'Remove a Goal entry');
     argParser.addFlag('well',
-        abbr: 'w', negatable: false, help: 'Remove something that Went Well');
+        abbr: 'w', negatable: false, help: 'Remove something that went well');
+    argParser.addFlag('improve',
+        abbr: 'i',
+        negatable: false,
+        help: 'Remove something that could be improved');
   }
 
   @override
@@ -162,6 +188,10 @@ class RemoveCommand extends Command {
 
     if (argResults!['well']) {
       return sprint.removeWentWell(argResults);
+    }
+
+    if (argResults!['improve']) {
+      return sprint.removeImprove(argResults);
     }
 
     return task.remove(argResults);

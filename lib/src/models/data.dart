@@ -248,6 +248,43 @@ class Data {
 
     return data.currentSprint!.wentWell;
   }
+
+  static Future<List<String>> addImprove(String improve) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.improve.add(improve);
+
+    await data.save();
+
+    return data.currentSprint!.improve;
+  }
+
+  static Future<List<String>> getImprove() async {
+    Data data = await Data.loadDataFile();
+
+    return data.currentSprint?.improve ?? [];
+  }
+
+  static Future<List<String>> editImproveWithIndex(
+      int index, String improve) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.improve[index] = improve;
+
+    await data.save();
+
+    return data.currentSprint!.improve;
+  }
+
+  static Future<List<String>> removeImproveWithIndex(int index) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.improve.removeAt(index);
+
+    await data.save();
+
+    return data.currentSprint!.improve;
+  }
 }
 
 class StandupInfo {

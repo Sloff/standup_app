@@ -123,6 +123,25 @@ Future<void> removeWentWell(ArgResults? argResults) async {
       Data.removeWentWellWithIndex, _printHeadingAndWhatWentWell);
 }
 
+Future<void> addImprove(ArgResults? argResults) async {
+  await genericAdd(argResults, 'What could be Improved', Data.addImprove,
+      _printHeadingAndImprove);
+}
+
+Future<void> viewImprove() async {
+  await genericView(Data.getImprove, _printHeadingAndImprove);
+}
+
+Future<void> editImprove(ArgResults? argResults) async {
+  await genericEdit(argResults, 'New Description', Data.getImprove,
+      Data.editImproveWithIndex, _printHeadingAndImprove);
+}
+
+Future<void> removeImprove(ArgResults? argResults) async {
+  await genericRemove(argResults, Data.getImprove, Data.removeImproveWithIndex,
+      _printHeadingAndImprove);
+}
+
 Future<void> genericAdd(ArgResults? argResults, String prompt, Function addFn,
     Function printFn) async {
   var newEntry = argResults?.rest.isNotEmpty ?? false
@@ -193,6 +212,6 @@ void _printHeadingAndWhatWentWell(List<String> wentWell) {
   printHeadingAndList(heading: 'What Went Well', list: wentWell);
 }
 
-void _printHeadingAndImproved(List<String> improved) {
+void _printHeadingAndImprove(List<String> improved) {
   printHeadingAndList(heading: 'Could be Improved', list: improved);
 }
