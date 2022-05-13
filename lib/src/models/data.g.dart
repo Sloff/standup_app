@@ -14,9 +14,13 @@ Data _$DataFromJson(Map<String, dynamic> json) => Data(
       tasks: (json['tasks'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(k, Task.fromJson(e as Map<String, dynamic>)),
       ),
+      currentSprint: json['currentSprint'] == null
+          ? null
+          : Sprint.fromJson(json['currentSprint'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DataToJson(Data instance) => <String, dynamic>{
       'days': instance.days.map((k, e) => MapEntry(k.toIso8601String(), e)),
       'tasks': instance.tasks,
+      'currentSprint': instance.currentSprint,
     };

@@ -7,6 +7,7 @@ import 'package:tint/tint.dart';
 import 'package:uuid/uuid.dart';
 
 import './task.dart';
+import './sprint.dart';
 
 part 'data.g.dart';
 
@@ -15,14 +16,17 @@ class Data {
   Map<DateTime, List<String>> days;
   Map<String, Task> tasks;
 
+  Sprint? currentSprint;
+
   static Data? _cache;
   static DateTime? _timeModified;
 
-  Data({required this.days, required this.tasks});
+  Data({required this.days, required this.tasks, this.currentSprint});
 
   Data.empty()
       : days = {},
-        tasks = {};
+        tasks = {},
+        currentSprint = null;
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
@@ -135,6 +139,14 @@ class Data {
         today: today,
         previousDay: previousDay,
         previousDayDate: previousDayDate);
+  }
+
+  static Future<void> newSprint({required Sprint sprint}) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint = sprint;
+
+    await data.save();
   }
 }
 

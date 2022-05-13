@@ -9,6 +9,7 @@ import 'package:tint/tint.dart';
 import '/src/models/models.dart';
 import '/src/utils/utils.dart' as utils;
 import './print.dart';
+import './utils.dart';
 
 class AddCommand extends Command {
   @override
@@ -32,7 +33,7 @@ class AddCommand extends Command {
   void run() async {
     var entryDescription = argResults?.rest.isNotEmpty ?? false
         ? argResults!.rest.join(' ')
-        : Input(prompt: 'Description:', validator: _isRequired).interact();
+        : Input(prompt: 'Description:', validator: isRequired).interact();
 
     var dateOfEntry = DateTime.parse(argResults!['date']);
 
@@ -131,7 +132,7 @@ class EditCommand extends Command {
         : Input(
                 prompt: 'New Description:',
                 initialText: tasks[entryToEditIndex].description,
-                validator: _isRequired)
+                validator: isRequired)
             .interact();
 
     await Data.editTaskOnDate(
@@ -194,14 +195,6 @@ void _printTasksOnDate(DateTime date) async {
   printHeadingAndList(
       heading: date.format('yyyy-MM-dd'),
       list: tasks.map((task) => task.description));
-}
-
-bool _isRequired(String val) {
-  if (val.isNotEmpty) {
-    return true;
-  }
-
-  throw ValidationError('A description is required');
 }
 
 int _selectedEntry(ArgResults? argResults, List<Task> tasks) {

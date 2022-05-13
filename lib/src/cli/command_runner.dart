@@ -3,15 +3,17 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:tint/tint.dart';
 
-import './task_commands.dart';
+import './task_commands.dart' as task;
+import './sprint_commands.dart' as sprint;
 
 void commandRunner(List<String> args) {
   var runner =
       CommandRunner('standup', 'Assists with keeping track of work for standup')
-        ..addCommand(AddCommand())
-        ..addCommand(ViewCommand())
-        ..addCommand(EditCommand())
-        ..addCommand(RemoveCommand());
+        ..addCommand(task.AddCommand())
+        ..addCommand(task.ViewCommand())
+        ..addCommand(task.EditCommand())
+        ..addCommand(task.RemoveCommand())
+        ..addCommand(sprint.NewCommand());
 
   runner.run(args).catchError((error) {
     switch (error.runtimeType) {

@@ -5,7 +5,7 @@ part 'sprint.g.dart';
 @JsonSerializable()
 class Sprint {
   String name;
-  Duration duration;
+  SprintBounds duration;
   List<String> goal = [];
   List<String> wentWell = [];
   List<String> improve = [];
@@ -26,14 +26,14 @@ class Sprint {
 }
 
 @JsonSerializable()
-class Duration {
+class SprintBounds {
   DateTime start;
   DateTime end;
 
-  Duration({required this.start, required this.end});
+  SprintBounds({required this.start, required this.end});
 
-  factory Duration.fromJson(Map<String, dynamic> json) =>
-      _$DurationFromJson(json);
+  factory SprintBounds.fromJson(Map<String, dynamic> json) =>
+      _$SprintBoundsFromJson(json);
 
-  Map<String, dynamic> toJson() => _$DurationToJson(this);
+  Map<String, dynamic> toJson() => _$SprintBoundsToJson(this);
 }
