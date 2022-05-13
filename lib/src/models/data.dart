@@ -19,16 +19,23 @@ class Data {
   Map<String, Task> tasks;
 
   Sprint? currentSprint;
+  List<Sprint> previousSprints = [];
 
   static Data? _cache;
   static DateTime? _timeModified;
 
-  Data({required this.days, required this.tasks, this.currentSprint});
+  Data(
+      {required this.days,
+      required this.tasks,
+      this.currentSprint,
+      List<Sprint>? previousSprints})
+      : previousSprints = previousSprints ?? [];
 
   Data.empty()
       : days = {},
         tasks = {},
-        currentSprint = null;
+        currentSprint = null,
+        previousSprints = [];
 
   factory Data.fromJson(Map<String, dynamic> json) => _$DataFromJson(json);
 
@@ -159,6 +166,10 @@ class Data {
 
   static Future<void> newSprint({required Sprint sprint}) async {
     Data data = await Data.loadDataFile();
+
+    if (data.currentSprint != null) {
+      data.previousSprints.add(data.currentSprint!);
+    }
 
     data.currentSprint = sprint;
 
