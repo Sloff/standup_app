@@ -6,7 +6,7 @@ import 'package:interact/interact.dart';
 import 'package:tint/tint.dart';
 
 import '/src/models/models.dart';
-import './utils.dart';
+import 'utils.dart';
 
 class NewCommand extends Command {
   @override

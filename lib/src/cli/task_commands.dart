@@ -1,200 +1,100 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:interact/interact.dart';
 import 'package:tint/tint.dart';
 
 import '/src/models/models.dart';
 import '/src/utils/utils.dart' as utils;
-import './print.dart';
-import './sprint_commands.dart';
-import './utils.dart';
+import 'print.dart';
+import 'utils.dart';
 
-class AddCommand extends Command {
-  @override
-  final name = 'add';
+Future<void> add(ArgResults? argResults) async {
+  var entryDescription = argResults?.rest.isNotEmpty ?? false
+      ? argResults!.rest.join(' ')
+      : Input(prompt: 'Description:', validator: isRequired).interact();
 
-  @override
-  final aliases = ['a'];
+  var dateOfEntry = DateTime.parse(argResults!['date']);
 
-  @override
-  final description = 'Create a new entry';
+  var task = Task(description: entryDescription);
 
-  AddCommand() {
-    argParser.addOption('date',
-        abbr: 'd',
-        help: 'The date of the entry.',
-        valueHelp: 'YYYY-MM-DD',
-        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
-  }
+  await Data.addTask(dateOfEntry: dateOfEntry, task: task);
 
-  @override
-  void run() async {
-    if (await Data.sprintStatus() != SprintStatus.active) {
-      await noActiveSprint();
-    }
-
-    var entryDescription = argResults?.rest.isNotEmpty ?? false
-        ? argResults!.rest.join(' ')
-        : Input(prompt: 'Description:', validator: isRequired).interact();
-
-    var dateOfEntry = DateTime.parse(argResults!['date']);
-
-    var task = Task(description: entryDescription);
-
-    await Data.addTask(dateOfEntry: dateOfEntry, task: task);
-
-    _printTasksOnDate(dateOfEntry);
-  }
+  await _printTasksOnDate(dateOfEntry);
 }
 
-class ViewCommand extends Command {
-  @override
-  final name = 'view';
-
-  @override
-  final aliases = ['v'];
-
-  @override
-  final description = 'View entries';
-
-  ViewCommand() {
-    argParser.addOption(
-      'date',
-      abbr: 'd',
-      help: 'The date of the entry.',
-      valueHelp: 'YYYY-MM-DD',
-    );
+Future<void> view(ArgResults? argResults) async {
+  if (argResults?['date'] != null) {
+    return _printTasksOnDate(DateTime.parse(argResults!['date']));
   }
 
-  @override
-  void run() async {
-    if (argResults?['date'] != null) {
-      return _printTasksOnDate(DateTime.parse(argResults!['date']));
-    }
+  return _viewTasksForStandup();
+}
 
-    return _viewTasksForStandup();
-  }
+Future<void> _viewTasksForStandup() async {
+  var standupTasks = await Data.getTasksForStandup();
 
-  void _viewTasksForStandup() async {
-    var standupTasks = await Data.getTasksForStandup();
-
-    if (standupTasks.previousDayDate != null) {
-      printHeadingAndList(
-          heading: utils.getRelativeDateHeading(standupTasks.previousDayDate!),
-          list: standupTasks.previousDay.map((e) => e.description));
-    }
-
+  if (standupTasks.previousDayDate != null) {
     printHeadingAndList(
-        heading: "Today I'm working on",
-        list: standupTasks.today.map((e) => e.description));
+        heading: utils.getRelativeDateHeading(standupTasks.previousDayDate!),
+        list: standupTasks.previousDay.map((e) => e.description));
   }
+
+  printHeadingAndList(
+      heading: "Today I'm working on",
+      list: standupTasks.today.map((e) => e.description));
 }
 
-class EditCommand extends Command {
-  @override
-  final name = 'edit';
+Future<void> edit(ArgResults? argResults) async {
+  DateTime dateOfEntryToEdit = DateTime.parse(argResults!['date']);
 
-  @override
-  final aliases = ['e'];
+  List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
 
-  @override
-  final description = 'Edit an Entry';
-
-  EditCommand() {
-    argParser.addOption(
-      'date',
-      abbr: 'd',
-      help: 'The date of the entry.',
-      valueHelp: 'YYYY-MM-DD',
-      defaultsTo: DateTime.now().format('yyyy-MM-dd'),
-    );
-    argParser.addOption(
-      'index',
-      abbr: 'i',
-      help: 'The zero based index of the entry',
-    );
+  if (tasks.isEmpty) {
+    stdout.writeln('Nothing to edit'.yellow());
+    return;
   }
 
-  @override
-  void run() async {
-    DateTime dateOfEntryToEdit = DateTime.parse(argResults!['date']);
+  stdout.writeln('');
+  int entryToEditIndex = _selectedEntry(argResults, tasks);
 
-    List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
+  String newDescription = argResults.rest.isNotEmpty
+      ? argResults.rest.join(' ')
+      : Input(
+              prompt: 'New Description:',
+              initialText: tasks[entryToEditIndex].description,
+              validator: isRequired)
+          .interact();
 
-    if (tasks.isEmpty) {
-      stdout.writeln('Nothing to edit'.yellow());
-      return;
-    }
+  await Data.editTaskOnDate(
+      task: TaskWithId(
+          id: tasks[entryToEditIndex].id, description: newDescription));
 
-    stdout.writeln('');
-    int entryToEditIndex = _selectedEntry(argResults, tasks);
-
-    String newDescription = argResults?.rest.isNotEmpty ?? false
-        ? argResults!.rest.join(' ')
-        : Input(
-                prompt: 'New Description:',
-                initialText: tasks[entryToEditIndex].description,
-                validator: isRequired)
-            .interact();
-
-    await Data.editTaskOnDate(
-        task: TaskWithId(
-            id: tasks[entryToEditIndex].id, description: newDescription));
-
-    _printTasksOnDate(dateOfEntryToEdit);
-  }
+  await _printTasksOnDate(dateOfEntryToEdit);
 }
 
-class RemoveCommand extends Command {
-  @override
-  final name = 'remove';
+Future<void> remove(ArgResults? argResults) async {
+  DateTime dateOfEntryToRemove = DateTime.parse(argResults!['date']);
 
-  @override
-  final aliases = ['r', 'delete', 'd'];
+  List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToRemove);
 
-  @override
-  final description = 'Remove an Entry';
-
-  RemoveCommand() {
-    argParser.addOption('date',
-        abbr: 'd',
-        help: 'The date of the entry.',
-        valueHelp: 'YYYY-MM-DD',
-        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
-    argParser.addOption(
-      'index',
-      abbr: 'i',
-      help: 'The zero based index of the entry',
-    );
+  if (tasks.isEmpty) {
+    stdout.writeln('Nothing to remove'.yellow());
+    return;
   }
 
-  @override
-  void run() async {
-    DateTime dateOfEntryToRemove = DateTime.parse(argResults!['date']);
+  int entryToRemoveIndex = _selectedEntry(argResults, tasks);
 
-    List<TaskWithId> tasks =
-        await Data.getTasksOnDate(date: dateOfEntryToRemove);
+  await Data.removeTaskOnDate(
+    date: dateOfEntryToRemove,
+    taskId: tasks[entryToRemoveIndex].id,
+  );
 
-    if (tasks.isEmpty) {
-      stdout.writeln('Nothing to remove'.yellow());
-      return;
-    }
-
-    int entryToRemoveIndex = _selectedEntry(argResults, tasks);
-
-    await Data.removeTaskOnDate(
-      date: dateOfEntryToRemove,
-      taskId: tasks[entryToRemoveIndex].id,
-    );
-
-    _printTasksOnDate(dateOfEntryToRemove);
-  }
+  await _printTasksOnDate(dateOfEntryToRemove);
 }
 
-void _printTasksOnDate(DateTime date) async {
+Future<void> _printTasksOnDate(DateTime date) async {
   List<Task> tasks = await Data.getTasksOnDate(date: date);
 
   printHeadingAndList(
