@@ -185,6 +185,33 @@ class Data {
 
     return data.currentSprint!.goals;
   }
+
+  static Future<List<String>> getGoals() async {
+    Data data = await Data.loadDataFile();
+
+    return data.currentSprint?.goals ?? [];
+  }
+
+  static Future<List<String>> editGoalWithIndex(
+      {required int index, required String goal}) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.goals[index] = goal;
+
+    await data.save();
+
+    return data.currentSprint!.goals;
+  }
+
+  static Future<List<String>> removeGoalWithIndex({required int index}) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.goals.removeAt(index);
+
+    await data.save();
+
+    return data.currentSprint!.goals;
+  }
 }
 
 class StandupInfo {

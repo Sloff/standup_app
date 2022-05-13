@@ -92,5 +92,55 @@ Future<void> addGoal(ArgResults? argResults) async {
 
   var goals = await Data.addGoal(goal: goalDescription);
 
+  _printHeadingAndGoals(goals);
+}
+
+Future<void> viewGoals(ArgResults? argResults) async {
+  var goals = await Data.getGoals();
+
+  _printHeadingAndGoals(goals);
+}
+
+Future<void> edit(ArgResults? argResults) async {
+  List<String> goals = await Data.getGoals();
+
+  if (goals.isEmpty) {
+    stdout.writeln('Nothing to edit'.yellow());
+    return;
+  }
+
+  stdout.writeln('');
+  int entryToEditIndex = getSelectedEntryIndex(argResults?['index'], goals);
+
+  String newGoal = argResults?.rest.isNotEmpty ?? false
+      ? argResults!.rest.join(' ')
+      : Input(
+              prompt: 'New Description',
+              initialText: goals[entryToEditIndex],
+              validator: isRequired)
+          .interact();
+
+  var newGoals =
+      await Data.editGoalWithIndex(goal: newGoal, index: entryToEditIndex);
+
+  _printHeadingAndGoals(newGoals);
+}
+
+Future<void> remove(ArgResults? argResults) async {
+  List<String> goals = await Data.getGoals();
+
+  if (goals.isEmpty) {
+    stdout.writeln('Nothing to remove'.yellow());
+    return;
+  }
+
+  int entryToRemoveIndex = getSelectedEntryIndex(argResults?['index'], goals);
+
+  var newGoals = await Data.removeGoalWithIndex(index: entryToRemoveIndex);
+
+  _printHeadingAndGoals(newGoals);
+}
+
+void _printHeadingAndGoals(List<String> goals) {
   printHeadingAndList(heading: 'Sprint Goals', list: goals);
 }

@@ -56,11 +56,17 @@ class ViewCommand extends Command {
       help: 'The date of the entry.',
       valueHelp: 'YYYY-MM-DD',
     );
+    argParser.addFlag('goal',
+        abbr: 'g', negatable: false, help: 'Add a Goal entry');
   }
 
   @override
-  void run() async {
-    await task.view(argResults);
+  Future<void> run() async {
+    if (argResults!['goal']) {
+      return sprint.viewGoals(argResults);
+    }
+
+    return task.view(argResults);
   }
 }
 
@@ -87,11 +93,17 @@ class EditCommand extends Command {
       abbr: 'i',
       help: 'The zero based index of the entry',
     );
+    argParser.addFlag('goal',
+        abbr: 'g', negatable: false, help: 'Add a Goal entry');
   }
 
   @override
-  void run() async {
-    await task.edit(argResults);
+  Future<void> run() async {
+    if (argResults!['goal']) {
+      return sprint.edit(argResults);
+    }
+
+    return task.edit(argResults);
   }
 }
 
@@ -116,10 +128,16 @@ class RemoveCommand extends Command {
       abbr: 'i',
       help: 'The zero based index of the entry',
     );
+    argParser.addFlag('goal',
+        abbr: 'g', negatable: false, help: 'Add a Goal entry');
   }
 
   @override
-  void run() async {
-    await task.remove(argResults);
+  Future<void> run() async {
+    if (argResults!['goal']) {
+      return sprint.remove(argResults);
+    }
+
+    return task.remove(argResults);
   }
 }

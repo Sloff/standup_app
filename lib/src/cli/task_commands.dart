@@ -103,17 +103,6 @@ Future<void> _printTasksOnDate(DateTime date) async {
 }
 
 int _selectedEntry(ArgResults? argResults, List<Task> tasks) {
-  int selectedEntryIndex;
-
-  if ((argResults?['index'] ?? '').isNotEmpty) {
-    selectedEntryIndex = int.parse(argResults!['index']);
-  } else {
-    stdout.writeln('');
-    selectedEntryIndex = Select(
-      prompt: 'Please select an entry',
-      options: tasks.map((task) => task.description).toList(),
-    ).interact();
-  }
-
-  return selectedEntryIndex;
+  return getSelectedEntryIndex(
+      argResults?['index'], tasks.map((task) => task.description).toList());
 }
