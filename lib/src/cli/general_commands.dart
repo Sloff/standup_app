@@ -23,6 +23,8 @@ class AddCommand extends Command {
         defaultsTo: DateTime.now().format('yyyy-MM-dd'));
     argParser.addFlag('goal',
         abbr: 'g', negatable: false, help: 'Add a Goal entry');
+    argParser.addFlag('well',
+        abbr: 'w', negatable: false, help: 'Add something that Went Well');
   }
 
   @override
@@ -33,6 +35,10 @@ class AddCommand extends Command {
 
     if (argResults!['goal']) {
       return sprint.addGoal(argResults);
+    }
+
+    if (argResults!['well']) {
+      return sprint.addWentWell(argResults);
     }
 
     return task.add(argResults);
@@ -57,13 +63,21 @@ class ViewCommand extends Command {
       valueHelp: 'YYYY-MM-DD',
     );
     argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'Add a Goal entry');
+        abbr: 'g', negatable: false, help: 'View the Goal entries');
+    argParser.addFlag('well',
+        abbr: 'w',
+        negatable: false,
+        help: 'View what Went Well during the Sprint');
   }
 
   @override
   Future<void> run() async {
     if (argResults!['goal']) {
-      return sprint.viewGoals(argResults);
+      return sprint.viewGoals();
+    }
+
+    if (argResults!['well']) {
+      return sprint.viewWentWell();
     }
 
     return task.view(argResults);
@@ -94,13 +108,19 @@ class EditCommand extends Command {
       help: 'The zero based index of the entry',
     );
     argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'Add a Goal entry');
+        abbr: 'g', negatable: false, help: 'Edit a Goal entry');
+    argParser.addFlag('well',
+        abbr: 'w', negatable: false, help: 'Edit something that Went Well');
   }
 
   @override
   Future<void> run() async {
     if (argResults!['goal']) {
-      return sprint.edit(argResults);
+      return sprint.editGoal(argResults);
+    }
+
+    if (argResults!['well']) {
+      return sprint.editWentWell(argResults);
     }
 
     return task.edit(argResults);
@@ -129,13 +149,19 @@ class RemoveCommand extends Command {
       help: 'The zero based index of the entry',
     );
     argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'Add a Goal entry');
+        abbr: 'g', negatable: false, help: 'Remove a Goal entry');
+    argParser.addFlag('well',
+        abbr: 'w', negatable: false, help: 'Remove something that Went Well');
   }
 
   @override
   Future<void> run() async {
     if (argResults!['goal']) {
-      return sprint.remove(argResults);
+      return sprint.removeGoal(argResults);
+    }
+
+    if (argResults!['well']) {
+      return sprint.removeWentWell(argResults);
     }
 
     return task.remove(argResults);

@@ -176,7 +176,7 @@ class Data {
     await data.save();
   }
 
-  static Future<List<String>> addGoal({required String goal}) async {
+  static Future<List<String>> addGoal(String goal) async {
     Data data = await Data.loadDataFile();
 
     data.currentSprint!.goals.add(goal);
@@ -192,8 +192,7 @@ class Data {
     return data.currentSprint?.goals ?? [];
   }
 
-  static Future<List<String>> editGoalWithIndex(
-      {required int index, required String goal}) async {
+  static Future<List<String>> editGoalWithIndex(int index, String goal) async {
     Data data = await Data.loadDataFile();
 
     data.currentSprint!.goals[index] = goal;
@@ -203,7 +202,7 @@ class Data {
     return data.currentSprint!.goals;
   }
 
-  static Future<List<String>> removeGoalWithIndex({required int index}) async {
+  static Future<List<String>> removeGoalWithIndex(int index) async {
     Data data = await Data.loadDataFile();
 
     data.currentSprint!.goals.removeAt(index);
@@ -211,6 +210,43 @@ class Data {
     await data.save();
 
     return data.currentSprint!.goals;
+  }
+
+  static Future<List<String>> addWentWell(String wentWell) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.wentWell.add(wentWell);
+
+    await data.save();
+
+    return data.currentSprint!.wentWell;
+  }
+
+  static Future<List<String>> getWentWell() async {
+    Data data = await Data.loadDataFile();
+
+    return data.currentSprint?.wentWell ?? [];
+  }
+
+  static Future<List<String>> editWentWellWithIndex(
+      int index, String wentWell) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.wentWell[index] = wentWell;
+
+    await data.save();
+
+    return data.currentSprint!.wentWell;
+  }
+
+  static Future<List<String>> removeWentWellWithIndex(int index) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.wentWell.removeAt(index);
+
+    await data.save();
+
+    return data.currentSprint!.wentWell;
   }
 }
 

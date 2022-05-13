@@ -86,61 +86,113 @@ Sprint buildNewSprint(
 }
 
 Future<void> addGoal(ArgResults? argResults) async {
-  var goalDescription = argResults?.rest.isNotEmpty ?? false
+  await genericAdd(
+      argResults, 'Goal Description', Data.addGoal, _printHeadingAndGoals);
+}
+
+Future<void> viewGoals() async {
+  await genericView(Data.getGoals, _printHeadingAndGoals);
+}
+
+Future<void> editGoal(ArgResults? argResults) async {
+  await genericEdit(argResults, 'Goal', Data.getGoals, Data.editGoalWithIndex,
+      _printHeadingAndGoals);
+}
+
+Future<void> removeGoal(ArgResults? argResults) async {
+  await genericRemove(argResults, Data.getGoals, Data.removeGoalWithIndex,
+      _printHeadingAndGoals);
+}
+
+Future<void> addWentWell(ArgResults? argResults) async {
+  await genericAdd(argResults, 'What Went Well', Data.addWentWell,
+      _printHeadingAndWhatWentWell);
+}
+
+Future<void> viewWentWell() async {
+  await genericView(Data.getWentWell, _printHeadingAndWhatWentWell);
+}
+
+Future<void> editWentWell(ArgResults? argResults) async {
+  await genericEdit(argResults, 'New Description', Data.getWentWell,
+      Data.editWentWellWithIndex, _printHeadingAndWhatWentWell);
+}
+
+Future<void> removeWentWell(ArgResults? argResults) async {
+  await genericRemove(argResults, Data.getWentWell,
+      Data.removeWentWellWithIndex, _printHeadingAndWhatWentWell);
+}
+
+Future<void> genericAdd(ArgResults? argResults, String prompt, Function addFn,
+    Function printFn) async {
+  var newEntry = argResults?.rest.isNotEmpty ?? false
       ? argResults!.rest.join(' ')
-      : Input(prompt: 'Goal Description', validator: isRequired).interact();
+      : Input(prompt: prompt, validator: isRequired).interact();
 
-  var goals = await Data.addGoal(goal: goalDescription);
+  var entries = await addFn(newEntry);
 
-  _printHeadingAndGoals(goals);
+  printFn(entries);
 }
 
-Future<void> viewGoals(ArgResults? argResults) async {
-  var goals = await Data.getGoals();
+Future<void> genericView(Function getEntriesFn, Function printFn) async {
+  var entries = await getEntriesFn();
 
-  _printHeadingAndGoals(goals);
+  printFn(entries);
 }
 
-Future<void> edit(ArgResults? argResults) async {
-  List<String> goals = await Data.getGoals();
+Future<void> genericEdit(
+    ArgResults? argResults,
+    String prompt,
+    Function getEntriesFn,
+    Function editEntryWithIndex,
+    Function printFn) async {
+  List<String> entries = await getEntriesFn();
 
-  if (goals.isEmpty) {
+  if (entries.isEmpty) {
     stdout.writeln('Nothing to edit'.yellow());
     return;
   }
 
   stdout.writeln('');
-  int entryToEditIndex = getSelectedEntryIndex(argResults?['index'], goals);
+  int entryToEditIndex = getSelectedEntryIndex(argResults?['index'], entries);
 
-  String newGoal = argResults?.rest.isNotEmpty ?? false
+  String newEntry = argResults?.rest.isNotEmpty ?? false
       ? argResults!.rest.join(' ')
       : Input(
-              prompt: 'New Description',
-              initialText: goals[entryToEditIndex],
+              prompt: prompt,
+              initialText: entries[entryToEditIndex],
               validator: isRequired)
           .interact();
 
-  var newGoals =
-      await Data.editGoalWithIndex(goal: newGoal, index: entryToEditIndex);
+  var newEntries = await editEntryWithIndex(entryToEditIndex, newEntry);
 
-  _printHeadingAndGoals(newGoals);
+  printFn(newEntries);
 }
 
-Future<void> remove(ArgResults? argResults) async {
-  List<String> goals = await Data.getGoals();
+Future<void> genericRemove(ArgResults? argResults, Function getEntriesFn,
+    Function removeEntryFn, Function printFn) async {
+  List<String> entries = await getEntriesFn();
 
-  if (goals.isEmpty) {
+  if (entries.isEmpty) {
     stdout.writeln('Nothing to remove'.yellow());
     return;
   }
 
-  int entryToRemoveIndex = getSelectedEntryIndex(argResults?['index'], goals);
+  int entryToRemoveIndex = getSelectedEntryIndex(argResults?['index'], entries);
 
-  var newGoals = await Data.removeGoalWithIndex(index: entryToRemoveIndex);
+  var newEntries = await removeEntryFn(entryToRemoveIndex);
 
-  _printHeadingAndGoals(newGoals);
+  printFn(newEntries);
 }
 
 void _printHeadingAndGoals(List<String> goals) {
   printHeadingAndList(heading: 'Sprint Goals', list: goals);
+}
+
+void _printHeadingAndWhatWentWell(List<String> wentWell) {
+  printHeadingAndList(heading: 'What Went Well', list: wentWell);
+}
+
+void _printHeadingAndImproved(List<String> improved) {
+  printHeadingAndList(heading: 'Could be Improved', list: improved);
 }
