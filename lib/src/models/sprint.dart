@@ -6,17 +6,17 @@ part 'sprint.g.dart';
 class Sprint {
   String name;
   SprintBounds duration;
-  List<String> goal = [];
+  List<String> goals = [];
   List<String> wentWell = [];
   List<String> improve = [];
 
   Sprint(
       {required this.name,
       required this.duration,
-      List<String>? goal,
+      List<String>? goals,
       List<String>? wentWell,
       List<String>? improve})
-      : goal = goal ?? [],
+      : goals = goals ?? [],
         wentWell = wentWell ?? [],
         improve = improve ?? [];
 

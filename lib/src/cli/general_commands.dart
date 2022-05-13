@@ -2,7 +2,7 @@ import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 
 import '/src/models/models.dart';
-import 'sprint_commands.dart';
+import 'sprint_commands.dart' as sprint;
 import 'task_commands.dart' as task;
 
 class AddCommand extends Command {
@@ -21,15 +21,21 @@ class AddCommand extends Command {
         help: 'The date of the entry.',
         valueHelp: 'YYYY-MM-DD',
         defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+    argParser.addFlag('goal',
+        abbr: 'g', negatable: false, help: 'Add a Goal entry');
   }
 
   @override
-  void run() async {
+  Future<void> run() async {
     if (await Data.sprintStatus() != SprintStatus.active) {
-      await noActiveSprint();
+      await sprint.noActiveSprint();
     }
 
-    await task.add(argResults);
+    if (argResults!['goal']) {
+      return sprint.addGoal(argResults);
+    }
+
+    return task.add(argResults);
   }
 }
 

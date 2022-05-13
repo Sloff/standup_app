@@ -1,8 +1,10 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 import 'package:interact/interact.dart';
+import 'package:standup_app/src/cli/print.dart';
 import 'package:tint/tint.dart';
 
 import '/src/models/models.dart';
@@ -81,4 +83,14 @@ Sprint buildNewSprint(
 
   return Sprint(
       name: sprintName, duration: SprintBounds(start: dateStart, end: dateEnd));
+}
+
+Future<void> addGoal(ArgResults? argResults) async {
+  var goalDescription = argResults?.rest.isNotEmpty ?? false
+      ? argResults!.rest.join(' ')
+      : Input(prompt: 'Goal Description', validator: isRequired).interact();
+
+  var goals = await Data.addGoal(goal: goalDescription);
+
+  printHeadingAndList(heading: 'Sprint Goals', list: goals);
 }

@@ -9,7 +9,8 @@ part of 'sprint.dart';
 Sprint _$SprintFromJson(Map<String, dynamic> json) => Sprint(
       name: json['name'] as String,
       duration: SprintBounds.fromJson(json['duration'] as Map<String, dynamic>),
-      goal: (json['goal'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      goals:
+          (json['goals'] as List<dynamic>?)?.map((e) => e as String).toList(),
       wentWell: (json['wentWell'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
@@ -20,7 +21,7 @@ Sprint _$SprintFromJson(Map<String, dynamic> json) => Sprint(
 Map<String, dynamic> _$SprintToJson(Sprint instance) => <String, dynamic>{
       'name': instance.name,
       'duration': instance.duration,
-      'goal': instance.goal,
+      'goals': instance.goals,
       'wentWell': instance.wentWell,
       'improve': instance.improve,
     };

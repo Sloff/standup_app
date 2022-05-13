@@ -13,7 +13,7 @@ import 'utils.dart';
 Future<void> add(ArgResults? argResults) async {
   var entryDescription = argResults?.rest.isNotEmpty ?? false
       ? argResults!.rest.join(' ')
-      : Input(prompt: 'Description:', validator: isRequired).interact();
+      : Input(prompt: 'Description', validator: isRequired).interact();
 
   var dateOfEntry = DateTime.parse(argResults!['date']);
 
@@ -62,7 +62,7 @@ Future<void> edit(ArgResults? argResults) async {
   String newDescription = argResults.rest.isNotEmpty
       ? argResults.rest.join(' ')
       : Input(
-              prompt: 'New Description:',
+              prompt: 'New Description',
               initialText: tasks[entryToEditIndex].description,
               validator: isRequired)
           .interact();
@@ -110,7 +110,7 @@ int _selectedEntry(ArgResults? argResults, List<Task> tasks) {
   } else {
     stdout.writeln('');
     selectedEntryIndex = Select(
-      prompt: 'Please select an entry:',
+      prompt: 'Please select an entry',
       options: tasks.map((task) => task.description).toList(),
     ).interact();
   }

@@ -175,6 +175,16 @@ class Data {
 
     await data.save();
   }
+
+  static Future<List<String>> addGoal({required String goal}) async {
+    Data data = await Data.loadDataFile();
+
+    data.currentSprint!.goals.add(goal);
+
+    await data.save();
+
+    return data.currentSprint!.goals;
+  }
 }
 
 class StandupInfo {
