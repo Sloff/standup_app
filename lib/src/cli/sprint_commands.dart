@@ -59,6 +59,7 @@ class SprintCommand extends Command {
   SprintCommand() {
     addSubcommand(NewCommand());
     addSubcommand(EditSprintCommand());
+    addSubcommand(ViewSprintCommand());
   }
 }
 
@@ -83,7 +84,7 @@ class EditSprintCommand extends Command {
 
   @override
   Future<void> run() async {
-    var currentSprint = await Data.getSprintDetails();
+    var currentSprint = await Data.getCurrentSprintDetails();
 
     if (currentSprint == null) {
       stdout.writeln('No active Sprint'.yellow());
@@ -124,6 +125,96 @@ class EditSprintCommand extends Command {
 
     stdout.writeln('Sprint ${sprint.name} updated'.green());
   }
+}
+
+class ViewSprintCommand extends Command {
+  @override
+  final name = 'view';
+
+  @override
+  final aliases = ['v'];
+
+  @override
+  final description = 'View the Sprint details';
+
+  ViewSprintCommand() {
+    argParser.addFlag('select',
+        abbr: 's', negatable: false, help: 'Select a previous Sprint');
+    argParser.addOption(
+      'index',
+      abbr: 'n',
+      help:
+          'The zero based index of the previous Sprint (NOTE: Order is from latest to oldest)',
+    );
+  }
+
+  @override
+  Future<void> run() async {
+    Sprint? sprint;
+
+    if (argResults!['select'] || argResults?['index'] != null) {
+      var previousSprints = (await Data.getPreviousSprints()).reversed.toList();
+
+      if (previousSprints.isEmpty) {
+        stdout.writeln('No previous Sprints'.yellow());
+        return;
+      }
+
+      int selectedSprintIndex = getSelectedEntryIndex(argResults?['index'],
+          previousSprints.map((e) => _formattedSprintName(e!)).toList());
+
+      sprint = previousSprints[selectedSprintIndex];
+    } else {
+      sprint = await Data.getCurrentSprintDetails();
+    }
+
+    if (sprint == null) {
+      stdout.writeln('No active Sprint'.yellow());
+      return;
+    }
+
+    stdout.writeln(_formattedSprintName(sprint).green());
+
+    if (sprint.goals.isNotEmpty) {
+      _printHeadingAndGoals(sprint.goals);
+    }
+
+    if (sprint.wentWell.isNotEmpty) {
+      _printHeadingAndWhatWentWell(sprint.wentWell);
+    }
+
+    if (sprint.improve.isNotEmpty) {
+      _printHeadingAndImprove(sprint.improve);
+    }
+
+    stdout.writeln('\nDay Entries'.underline().yellow());
+
+    bool entriesExist = false;
+
+    var dateIterator = sprint.duration.start;
+
+    while (dateIterator.isSameOrBefore(sprint.duration.end)) {
+      var tasks = await Data.getTasksOnDate(date: dateIterator);
+
+      if (tasks.isNotEmpty) {
+        entriesExist = true;
+
+        printHeadingAndList(
+            heading: dateIterator.format('yyyy-MM-dd'),
+            list: tasks.map((e) => e.description));
+      }
+
+      dateIterator = dateIterator.addDays(1);
+    }
+
+    if (!entriesExist) {
+      stdout.writeln('Nothing yet...'.yellow());
+    }
+  }
+}
+
+String _formattedSprintName(Sprint sprint) {
+  return 'Sprint ${sprint.name} (${sprint.duration.start.format('yyyy-MM-dd')} - ${sprint.duration.end.format('yyyy-MM-dd')})';
 }
 
 Future<void> noActiveSprint() async {
@@ -185,7 +276,7 @@ Future<void> removeGoal(ArgResults? argResults) async {
 }
 
 Future<void> addWentWell(ArgResults? argResults) async {
-  await genericAdd(argResults, 'What Went Well', Data.addWentWell,
+  await genericAdd(argResults, 'What went well', Data.addWentWell,
       _printHeadingAndWhatWentWell);
 }
 
@@ -289,7 +380,7 @@ void _printHeadingAndGoals(List<String> goals) {
 }
 
 void _printHeadingAndWhatWentWell(List<String> wentWell) {
-  printHeadingAndList(heading: 'What Went Well', list: wentWell);
+  printHeadingAndList(heading: 'What went well', list: wentWell);
 }
 
 void _printHeadingAndImprove(List<String> improved) {

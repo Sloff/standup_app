@@ -176,10 +176,16 @@ class Data {
     await data.save();
   }
 
-  static Future<Sprint?> getSprintDetails() async {
+  static Future<Sprint?> getCurrentSprintDetails() async {
     Data data = await Data.loadDataFile();
 
     return data.currentSprint;
+  }
+
+  static Future<List<Sprint?>> getPreviousSprints() async {
+    Data data = await Data.loadDataFile();
+
+    return data.previousSprints;
   }
 
   static Future<void> editSprint({required Sprint sprint}) async {
