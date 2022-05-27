@@ -42,7 +42,7 @@ class Data {
   Map<String, dynamic> toJson() => _$DataToJson(this);
 
   static Future<Data> loadDataFile() async {
-    final dataFile = File('data.json');
+    final dataFile = _getDataFile();
 
     if (!await dataFile.exists()) {
       return Data.empty();
@@ -59,7 +59,9 @@ class Data {
           'WARNING: Reading data file again because it was modified'.red());
     }
 
-    stdout.writeln('DEBUG: File read'.blue());
+    if (Platform.environment['STANDUP_ENV'] == 'DEBUG') {
+      stdout.writeln('DEBUG: File read'.blue());
+    }
     final jsonData = await dataFile.readAsString();
 
     _cache = Data.fromJson(json.decode(jsonData));
@@ -68,12 +70,22 @@ class Data {
   }
 
   Future<void> save() async {
-    final dataFile = File('data.json');
+    File dataFile = _getDataFile();
+
+    if (!await dataFile.exists()) {
+      await dataFile.create(recursive: true);
+    }
 
     JsonEncoder encoder = const JsonEncoder.withIndent('  ');
 
     await dataFile.writeAsString(encoder.convert(this));
     _timeModified = await dataFile.lastModified();
+  }
+
+  static File _getDataFile() {
+    var dataFileDirectory =
+        Directory(Platform.environment['STANDUP_CONFIG_DIR'] ?? '.');
+    return File('${dataFileDirectory.path}/data.json');
   }
 
   static Future<void> addTask(

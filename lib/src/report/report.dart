@@ -5,8 +5,6 @@ import 'package:dart_date/dart_date.dart';
 import '../models/models.dart';
 
 Future<void> generateReport(Sprint sprint) async {
-  final dataFile = File('${sprint.formattedSprintName()}.md');
-
   String report = '''
 ${_markdownHeadingAndList(heading: sprint.formattedSprintName(), list: const Iterable.empty())}
 
@@ -34,7 +32,17 @@ ${_markdownHeadingAndList(heading: dateIterator.format('yyyy-MM-dd'), headingLev
     dateIterator = dateIterator.addDays(1);
   }
 
-  await dataFile.writeAsString(report);
+  var reportsDirectory =
+      Directory(Platform.environment['STANDUP_REPORT_DIR'] ?? '.');
+
+  if (!await reportsDirectory.exists()) {
+    await reportsDirectory.create(recursive: true);
+  }
+
+  final reportFile =
+      File('${reportsDirectory.path}/${sprint.formattedSprintName()}.md');
+
+  await reportFile.writeAsString(report);
 }
 
 String _markdownHeadingAndList({
