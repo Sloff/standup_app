@@ -8,6 +8,7 @@ import 'package:standup_app/src/cli/print.dart';
 import 'package:tint/tint.dart';
 
 import '/src/models/models.dart';
+import '/src/report/report.dart';
 import 'utils.dart';
 
 class NewCommand extends Command {
@@ -60,6 +61,7 @@ class SprintCommand extends Command {
     addSubcommand(NewCommand());
     addSubcommand(EditSprintCommand());
     addSubcommand(ViewSprintCommand());
+    addSubcommand(GenerateSprintCommand());
   }
 }
 
@@ -161,7 +163,7 @@ class ViewSprintCommand extends Command {
       }
 
       int selectedSprintIndex = getSelectedEntryIndex(argResults?['index'],
-          previousSprints.map((e) => _formattedSprintName(e!)).toList());
+          previousSprints.map((e) => e!.formattedSprintName()).toList());
 
       sprint = previousSprints[selectedSprintIndex];
     } else {
@@ -173,7 +175,7 @@ class ViewSprintCommand extends Command {
       return;
     }
 
-    stdout.writeln(_formattedSprintName(sprint).green());
+    stdout.writeln(sprint.formattedSprintName().green());
 
     if (sprint.goals.isNotEmpty) {
       _printHeadingAndGoals(sprint.goals);
@@ -213,8 +215,58 @@ class ViewSprintCommand extends Command {
   }
 }
 
-String _formattedSprintName(Sprint sprint) {
-  return 'Sprint ${sprint.name} (${sprint.duration.start.format('yyyy-MM-dd')} - ${sprint.duration.end.format('yyyy-MM-dd')})';
+class GenerateSprintCommand extends Command {
+  @override
+  final name = 'generate';
+
+  @override
+  final aliases = ['g'];
+
+  @override
+  final description = 'Generate a markdown report of the Sprint';
+
+  GenerateSprintCommand() {
+    argParser.addFlag('select',
+        abbr: 's', negatable: false, help: 'Select a previous Sprint');
+    argParser.addOption(
+      'index',
+      abbr: 'n',
+      help:
+          'The zero based index of the previous Sprint (NOTE: Order is from latest to oldest)',
+    );
+  }
+
+  @override
+  Future<void> run() async {
+    Sprint? sprint;
+
+    if (argResults!['select'] || argResults?['index'] != null) {
+      var previousSprints = (await Data.getPreviousSprints()).reversed.toList();
+
+      if (previousSprints.isEmpty) {
+        stdout.writeln('No previous Sprints'.yellow());
+        return;
+      }
+
+      int selectedSprintIndex = getSelectedEntryIndex(argResults?['index'],
+          previousSprints.map((e) => e!.formattedSprintName()).toList());
+
+      sprint = previousSprints[selectedSprintIndex];
+    } else {
+      sprint = await Data.getCurrentSprintDetails();
+    }
+
+    if (sprint == null) {
+      stdout.writeln('No active Sprint'.yellow());
+      return;
+    }
+
+    stdout.writeln('Generating report...');
+
+    generateReport(sprint);
+
+    stdout.writeln('Report saved');
+  }
 }
 
 Future<void> noActiveSprint() async {
