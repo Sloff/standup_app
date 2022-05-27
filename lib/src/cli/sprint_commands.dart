@@ -268,6 +268,12 @@ class GenerateSprintCommand extends Command {
 }
 
 Future<void> _generateReport({Sprint? sprint, bool prompt = false}) async {
+  var sprintToGenerate = sprint ?? await Data.getCurrentSprintDetails();
+
+  if (sprintToGenerate == null) {
+    return;
+  }
+
   if (prompt) {
     if (!Confirm(
       prompt: 'Generate a Report of the current Sprint?',
@@ -276,13 +282,6 @@ Future<void> _generateReport({Sprint? sprint, bool prompt = false}) async {
     ).interact()) {
       return;
     }
-  }
-
-  var sprintToGenerate = sprint ?? await Data.getCurrentSprintDetails();
-
-  if (sprintToGenerate == null) {
-    stdout.writeln('No active Sprint'.yellow());
-    return;
   }
 
   stdout.writeln('Generating report...');
