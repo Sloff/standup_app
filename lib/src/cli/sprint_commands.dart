@@ -36,6 +36,8 @@ class NewCommand extends Command {
         ? argResults!.rest.join(' ')
         : null;
 
+    await _generateReport(prompt: true);
+
     var sprint = buildNewSprint(
         name: sprintName,
         dateStartString: argResults?['dateStart'],
@@ -261,12 +263,33 @@ class GenerateSprintCommand extends Command {
       return;
     }
 
-    stdout.writeln('Generating report...');
-
-    generateReport(sprint);
-
-    stdout.writeln('Report saved');
+    await _generateReport(sprint: sprint);
   }
+}
+
+Future<void> _generateReport({Sprint? sprint, bool prompt = false}) async {
+  if (prompt) {
+    if (!Confirm(
+      prompt: 'Generate a Report of the current Sprint?',
+      defaultValue: true,
+      waitForNewLine: true,
+    ).interact()) {
+      return;
+    }
+  }
+
+  var sprintToGenerate = sprint ?? await Data.getCurrentSprintDetails();
+
+  if (sprintToGenerate == null) {
+    stdout.writeln('No active Sprint'.yellow());
+    return;
+  }
+
+  stdout.writeln('Generating report...');
+
+  await generateReport(sprintToGenerate);
+
+  stdout.writeln('Report saved');
 }
 
 Future<void> noActiveSprint() async {
@@ -277,6 +300,7 @@ Future<void> noActiveSprint() async {
   ).interact();
 
   if (createNewSprint) {
+    await _generateReport(prompt: true);
     Sprint sprint = buildNewSprint();
     await Data.newSprint(sprint: sprint);
 
