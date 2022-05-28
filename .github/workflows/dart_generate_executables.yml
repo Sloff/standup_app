@@ -49,20 +49,20 @@ jobs:
       
       - name: Generate Windows executable
         run: dart compile exe ./bin/standup_app.dart -o generate/standup.exe
-        if: matrix.os == windows-latest
+        if: matrix.os == 'windows-latest'
       
       - uses: actions/upload-artifact@v3
-        if: matrix.os == windows-latest
+        if: matrix.os == 'windows-latest'
         with:
           name: standup
           path: generate/standup.exe
       
       - name: Generate other executable
         run: dart compile exe ./bin/standup_app.dart -o generate/standup
-        if: matrix.os != windows-latest
+        if: matrix.os != 'windows-latest'
       
       - uses: actions/upload-artifact@v3
-        if: matrix.os == windows-latest
+        if: matrix.os != 'windows-latest'
         with:
           name: standup
           path: generate/standup
