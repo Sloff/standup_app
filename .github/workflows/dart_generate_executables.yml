@@ -52,7 +52,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: matrix.os == 'windows-latest'
         with:
-          name: standup
+          name: Windows Executable
           path: generate/standup.exe
       
       - name: Generate other executable
@@ -60,7 +60,13 @@ jobs:
         if: matrix.os != 'windows-latest'
       
       - uses: actions/upload-artifact@v3
-        if: matrix.os != 'windows-latest'
+        if: matrix.os == 'ubuntu-latest'
         with:
-          name: standup
+          name: Linux Executable
+          path: generate/standup
+          
+      - uses: actions/upload-artifact@v3
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: MacOS Executable
           path: generate/standup
