@@ -134,6 +134,24 @@ class Data {
     await data.save();
   }
 
+  static Future<void> moveTask(
+      {required DateTime dateOfEntryToMoveFrom,
+      required DateTime dateOfEntryToMoveTo,
+      required String taskId}) async {
+    Data data = await Data.loadDataFile();
+
+    data.days[dateOfEntryToMoveFrom]!.remove(taskId);
+
+    if (data.days[dateOfEntryToMoveFrom]!.isEmpty) {
+      data.days.remove(dateOfEntryToMoveFrom);
+    }
+
+    var taskIds = data.days.putIfAbsent(dateOfEntryToMoveTo, (() => ([])));
+    taskIds.add(taskId);
+
+    await data.save();
+  }
+
   static Future<StandupInfo> getTasksForStandup() async {
     Data data = await Data.loadDataFile();
 
