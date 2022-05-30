@@ -1,3 +1,4 @@
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dart_date/dart_date.dart';
 
@@ -16,19 +17,13 @@ class AddCommand extends Command {
   final description = 'Create a new entry';
 
   AddCommand() {
-    argParser.addOption('date',
-        abbr: 'd',
-        help: 'The date of the entry.',
-        valueHelp: 'YYYY-MM-DD',
-        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
-    argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'Add a Goal entry');
-    argParser.addFlag('well',
-        abbr: 'w', negatable: false, help: 'Add something that went well');
-    argParser.addFlag('improve',
-        abbr: 'i',
-        negatable: false,
-        help: 'Add something that could be improved');
+    _addGeneralOptionsAndFlags(
+      argParser,
+      dateHelp: 'The date of the entry.',
+      goalHelp: 'Add a Goal entry.',
+      wentWellHelp: 'Add something that went well.',
+      improveHelp: 'Add something that could be improved.',
+    );
   }
 
   @override
@@ -64,20 +59,13 @@ class ViewCommand extends Command {
   final description = 'View entries';
 
   ViewCommand() {
-    argParser.addOption(
-      'date',
-      abbr: 'd',
-      help: 'The date of the entry.',
-      valueHelp: 'YYYY-MM-DD',
+    _addGeneralOptionsAndFlags(
+      argParser,
+      dateHelp: 'The date of the entry.',
+      goalHelp: 'View the Goal entries.',
+      wentWellHelp: 'View what went well during the Sprint.',
+      improveHelp: 'View what could be improved.',
     );
-    argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'View the Goal entries');
-    argParser.addFlag('well',
-        abbr: 'w',
-        negatable: false,
-        help: 'View what went well during the Sprint');
-    argParser.addFlag('improve',
-        abbr: 'i', negatable: false, help: 'View what could be improved');
   }
 
   @override
@@ -109,26 +97,14 @@ class EditCommand extends Command {
   final description = 'Edit an Entry';
 
   EditCommand() {
-    argParser.addOption(
-      'date',
-      abbr: 'd',
-      help: 'The date of the entry.',
-      valueHelp: 'YYYY-MM-DD',
-      defaultsTo: DateTime.now().format('yyyy-MM-dd'),
+    _addGeneralOptionsAndFlags(
+      argParser,
+      dateHelp: 'The date of the entry.',
+      goalHelp: 'Edit a Goal entry.',
+      wentWellHelp: 'Edit something that went well.',
+      improveHelp: 'Edit something that could be improved.',
+      addIndex: true,
     );
-    argParser.addOption(
-      'index',
-      abbr: 'n',
-      help: 'The zero based index of the entry',
-    );
-    argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'Edit a Goal entry');
-    argParser.addFlag('well',
-        abbr: 'w', negatable: false, help: 'Edit something that went well');
-    argParser.addFlag('improve',
-        abbr: 'i',
-        negatable: false,
-        help: 'Edit something that could be improved');
   }
 
   @override
@@ -160,24 +136,14 @@ class RemoveCommand extends Command {
   final description = 'Remove an Entry';
 
   RemoveCommand() {
-    argParser.addOption('date',
-        abbr: 'd',
-        help: 'The date of the entry.',
-        valueHelp: 'YYYY-MM-DD',
-        defaultsTo: DateTime.now().format('yyyy-MM-dd'));
-    argParser.addOption(
-      'index',
-      abbr: 'n',
-      help: 'The zero based index of the entry',
+    _addGeneralOptionsAndFlags(
+      argParser,
+      dateHelp: 'The date of the entry.',
+      goalHelp: 'Remove a Goal entry.',
+      wentWellHelp: 'Remove something that went well.',
+      improveHelp: 'Remove something that could be improved.',
+      addIndex: true,
     );
-    argParser.addFlag('goal',
-        abbr: 'g', negatable: false, help: 'Remove a Goal entry');
-    argParser.addFlag('well',
-        abbr: 'w', negatable: false, help: 'Remove something that went well');
-    argParser.addFlag('improve',
-        abbr: 'i',
-        negatable: false,
-        help: 'Remove something that could be improved');
   }
 
   @override
@@ -195,5 +161,30 @@ class RemoveCommand extends Command {
     }
 
     return task.remove(argResults);
+  }
+}
+
+void _addGeneralOptionsAndFlags(ArgParser argParser,
+    {required String dateHelp,
+    required String goalHelp,
+    required String wentWellHelp,
+    required String improveHelp,
+    bool addIndex = false,
+    String indexHelp = 'The zero based index of the entry'}) {
+  argParser.addOption('date',
+      abbr: 'd',
+      help: dateHelp,
+      valueHelp: 'YYYY-MM-DD',
+      defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+  argParser.addFlag('goal', abbr: 'g', negatable: false, help: goalHelp);
+  argParser.addFlag('well', abbr: 'w', negatable: false, help: wentWellHelp);
+  argParser.addFlag('improve', abbr: 'i', negatable: false, help: improveHelp);
+
+  if (addIndex) {
+    argParser.addOption(
+      'index',
+      abbr: 'n',
+      help: indexHelp,
+    );
   }
 }
