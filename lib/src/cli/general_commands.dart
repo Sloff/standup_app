@@ -128,6 +128,34 @@ class RemoveCommand extends Command {
   }
 }
 
+class CopyCommand extends Command {
+  @override
+  final name = 'copy';
+
+  @override
+  final aliases = ['c'];
+
+  @override
+  final description = 'Copy an Entry';
+
+  CopyCommand() {
+    argParser.addOption('dateFrom',
+        abbr: 'f', help: 'Date to copy from.', valueHelp: 'YYYY-MM-DD');
+    argParser.addOption('dateTo',
+        abbr: 't', help: 'Date to copy to.', valueHelp: 'YYYY-MM-DD');
+    argParser.addOption(
+      'index',
+      abbr: 'n',
+      help: 'The zero based index of the entry.',
+    );
+  }
+
+  @override
+  Future<void> run() async {
+    return task.copy(argResults);
+  }
+}
+
 void _addGeneralOptionsAndFlags(
   ArgParser argParser, {
   required String dateHelp,
@@ -136,7 +164,7 @@ void _addGeneralOptionsAndFlags(
   required String wentWellHelp,
   required String improveHelp,
   bool addIndex = false,
-  String indexHelp = 'The zero based index of the entry',
+  String indexHelp = 'The zero based index of the entry.',
 }) {
   argParser.addOption('date',
       abbr: 'd',

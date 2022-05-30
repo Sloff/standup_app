@@ -94,6 +94,38 @@ Future<void> remove(ArgResults? argResults) async {
   await _printTasksOnDate(dateOfEntryToRemove);
 }
 
+Future<void> copy(ArgResults? argResults) async {
+  DateTime dateOfEntryToCopy = DateTime.parse(argResults?['dateFrom'] ??
+      Input(
+              prompt: 'Date to copy from',
+              validator: isRequired,
+              initialText: DateTime.now().format('yyyy-MM-dd'))
+          .interact());
+
+  List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToCopy);
+
+  if (tasks.isEmpty) {
+    stdout.writeln('Nothing to copy'.yellow());
+    return;
+  }
+
+  int entryToCopyIndex = _selectedEntry(argResults, tasks);
+
+  DateTime dateToCopyEntryTo = DateTime.parse(argResults?['dateTo'] ??
+      Input(
+              prompt: 'Date to copy to',
+              validator: isRequired,
+              initialText: DateTime.now().format('yyyy-MM-dd'))
+          .interact());
+
+  await Data.addTask(
+    dateOfEntry: dateToCopyEntryTo,
+    task: tasks[entryToCopyIndex],
+  );
+
+  await _printTasksOnDate(dateToCopyEntryTo);
+}
+
 Future<void> _printTasksOnDate(DateTime date) async {
   List<Task> tasks = await Data.getTasksOnDate(date: date);
 
