@@ -17,13 +17,11 @@ class AddCommand extends Command {
   final description = 'Create a new entry';
 
   AddCommand() {
-    _addGeneralOptionsAndFlags(
-      argParser,
-      dateHelp: 'The date of the entry.',
-      goalHelp: 'Add a Goal entry.',
-      wentWellHelp: 'Add something that went well.',
-      improveHelp: 'Add something that could be improved.',
-    );
+    _addGeneralOptionsAndFlags(argParser,
+        dateHelp: 'The date of the entry.',
+        goalHelp: 'Add a Goal entry.',
+        wentWellHelp: 'Add something that went well.',
+        improveHelp: 'Add something that could be improved.');
   }
 
   @override
@@ -32,19 +30,11 @@ class AddCommand extends Command {
       await sprint.noActiveSprint();
     }
 
-    if (argResults!['goal']) {
-      return sprint.addGoal(argResults);
-    }
-
-    if (argResults!['well']) {
-      return sprint.addWentWell(argResults);
-    }
-
-    if (argResults!['improve']) {
-      return sprint.addImprove(argResults);
-    }
-
-    return task.add(argResults);
+    return _runFunctionBySetFlag(argResults,
+        goalFn: sprint.addGoal,
+        wentWellFn: sprint.addWentWell,
+        improveFn: sprint.addImprove,
+        taskFn: task.add);
   }
 }
 
@@ -59,30 +49,22 @@ class ViewCommand extends Command {
   final description = 'View entries';
 
   ViewCommand() {
-    _addGeneralOptionsAndFlags(
-      argParser,
-      dateHelp: 'The date of the entry.',
-      goalHelp: 'View the Goal entries.',
-      wentWellHelp: 'View what went well during the Sprint.',
-      improveHelp: 'View what could be improved.',
-    );
+    _addGeneralOptionsAndFlags(argParser,
+        dateHelp: 'The date of the entry.',
+        defaultDate: false,
+        goalHelp: 'View the Goal entries.',
+        wentWellHelp: 'View what went well during the Sprint.',
+        improveHelp: 'View what could be improved.');
   }
 
   @override
   Future<void> run() async {
-    if (argResults!['goal']) {
-      return sprint.viewGoals();
-    }
-
-    if (argResults!['well']) {
-      return sprint.viewWentWell();
-    }
-
-    if (argResults!['improve']) {
-      return sprint.viewImprove();
-    }
-
-    return task.view(argResults);
+    return _runFunctionBySetFlag(argResults,
+        goalFn: sprint.viewGoals,
+        wentWellFn: sprint.viewWentWell,
+        improveFn: sprint.viewImprove,
+        taskFn: task.view,
+        sendArgResultsThrough: false);
   }
 }
 
@@ -97,31 +79,21 @@ class EditCommand extends Command {
   final description = 'Edit an Entry';
 
   EditCommand() {
-    _addGeneralOptionsAndFlags(
-      argParser,
-      dateHelp: 'The date of the entry.',
-      goalHelp: 'Edit a Goal entry.',
-      wentWellHelp: 'Edit something that went well.',
-      improveHelp: 'Edit something that could be improved.',
-      addIndex: true,
-    );
+    _addGeneralOptionsAndFlags(argParser,
+        dateHelp: 'The date of the entry.',
+        goalHelp: 'Edit a Goal entry.',
+        wentWellHelp: 'Edit something that went well.',
+        improveHelp: 'Edit something that could be improved.',
+        addIndex: true);
   }
 
   @override
   Future<void> run() async {
-    if (argResults!['goal']) {
-      return sprint.editGoal(argResults);
-    }
-
-    if (argResults!['well']) {
-      return sprint.editWentWell(argResults);
-    }
-
-    if (argResults!['improve']) {
-      return sprint.editImprove(argResults);
-    }
-
-    return task.edit(argResults);
+    return _runFunctionBySetFlag(argResults,
+        goalFn: sprint.editGoal,
+        wentWellFn: sprint.editWentWell,
+        improveFn: sprint.editImprove,
+        taskFn: task.edit);
   }
 }
 
@@ -148,34 +120,29 @@ class RemoveCommand extends Command {
 
   @override
   Future<void> run() async {
-    if (argResults!['goal']) {
-      return sprint.removeGoal(argResults);
-    }
-
-    if (argResults!['well']) {
-      return sprint.removeWentWell(argResults);
-    }
-
-    if (argResults!['improve']) {
-      return sprint.removeImprove(argResults);
-    }
-
-    return task.remove(argResults);
+    return _runFunctionBySetFlag(argResults,
+        goalFn: sprint.removeGoal,
+        wentWellFn: sprint.removeWentWell,
+        improveFn: sprint.removeImprove,
+        taskFn: task.remove);
   }
 }
 
-void _addGeneralOptionsAndFlags(ArgParser argParser,
-    {required String dateHelp,
-    required String goalHelp,
-    required String wentWellHelp,
-    required String improveHelp,
-    bool addIndex = false,
-    String indexHelp = 'The zero based index of the entry'}) {
+void _addGeneralOptionsAndFlags(
+  ArgParser argParser, {
+  required String dateHelp,
+  bool defaultDate = true,
+  required String goalHelp,
+  required String wentWellHelp,
+  required String improveHelp,
+  bool addIndex = false,
+  String indexHelp = 'The zero based index of the entry',
+}) {
   argParser.addOption('date',
       abbr: 'd',
       help: dateHelp,
       valueHelp: 'YYYY-MM-DD',
-      defaultsTo: DateTime.now().format('yyyy-MM-dd'));
+      defaultsTo: defaultDate ? DateTime.now().format('yyyy-MM-dd') : null);
   argParser.addFlag('goal', abbr: 'g', negatable: false, help: goalHelp);
   argParser.addFlag('well', abbr: 'w', negatable: false, help: wentWellHelp);
   argParser.addFlag('improve', abbr: 'i', negatable: false, help: improveHelp);
@@ -187,4 +154,27 @@ void _addGeneralOptionsAndFlags(ArgParser argParser,
       help: indexHelp,
     );
   }
+}
+
+Future<void> _runFunctionBySetFlag(
+  ArgResults? argResults, {
+  required Function goalFn,
+  required Function wentWellFn,
+  required Function improveFn,
+  required Function taskFn,
+  bool sendArgResultsThrough = true,
+}) {
+  if (argResults!['goal']) {
+    return sendArgResultsThrough ? goalFn(argResults) : goalFn();
+  }
+
+  if (argResults['well']) {
+    return sendArgResultsThrough ? wentWellFn(argResults) : wentWellFn();
+  }
+
+  if (argResults['improve']) {
+    return sendArgResultsThrough ? improveFn(argResults) : improveFn();
+  }
+
+  return taskFn(argResults);
 }
