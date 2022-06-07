@@ -187,7 +187,8 @@ class Data {
       return SprintStatus.nil;
     }
 
-    if (data.currentSprint!.duration.end.isPast) {
+    if (data.currentSprint!.duration.end.isPast &&
+        !data.currentSprint!.duration.end.isToday) {
       return SprintStatus.inactive;
     }
 
