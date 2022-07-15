@@ -5,6 +5,7 @@ import 'package:dart_date/dart_date.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tint/tint.dart';
 import 'package:uuid/uuid.dart';
+import 'package:watcher/watcher.dart';
 
 import './task.dart';
 import './sprint.dart';
@@ -335,6 +336,10 @@ class Data {
     await data.save();
 
     return data.currentSprint!.improve;
+  }
+
+  static FileWatcher getConfigFileWatcher() {
+    return FileWatcher(_getDataFile().absolute.path);
   }
 }
 

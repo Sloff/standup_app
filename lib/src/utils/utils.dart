@@ -17,7 +17,9 @@ String getRelativeDateHeading(DateTime date) {
   }
 
   if (weekDiff > 7) {
-    return '${date.timeago()} on ${date.format("EEEE")} I worked on';
+    String timeAgo = date.timeago();
+    timeAgo = timeAgo[0].toUpperCase() + timeAgo.substring(1);
+    return '$timeAgo on ${date.format("EEEE")} I worked on';
   }
 
   return 'On ${date.format("EEEE")} I worked on';

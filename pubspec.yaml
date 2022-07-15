@@ -41,6 +41,7 @@ dependencies:
   tint: ^2.0.0
   interact: ^2.1.1
   uuid: ^3.0.6
+  watcher: ^1.0.1
 
 dev_dependencies:
   flutter_test:
