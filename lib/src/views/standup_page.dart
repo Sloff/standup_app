@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:standup_app/src/components/add_entry.dart';
 import 'package:watcher/watcher.dart';
 
 import '/src/models/models.dart';
@@ -39,37 +40,22 @@ class _StandupPageState extends State<StandupPage> {
     if (!dataFetched) {
       return const Center(child: CircularProgressIndicator());
     }
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: ListView(children: [
-                _buildHeading(
-                  utils.getRelativeDateHeading(standupInfo!.previousDayDate!),
-                ),
-                ..._buildTaskItemsFromList(standupInfo!.previousDay),
-                _buildHeading("Today I'm working on"),
-                ..._buildTaskItemsFromList(standupInfo!.today),
-              ]),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Expanded(
+          child: ListView(children: [
+            _buildHeading(
+              utils.getRelativeDateHeading(standupInfo!.previousDayDate!),
             ),
-            Row(mainAxisSize: MainAxisSize.min, children: [
-              const Expanded(child: TextField()),
-              Expanded(
-                child: TextButton(
-                    child: Text('Test'),
-                    onPressed: () {
-                      showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.parse('19700101'),
-                          lastDate: DateTime.parse('29991231'));
-                    }),
-              )
-            ]),
+            ..._buildTaskItemsFromList(standupInfo!.previousDay),
+            _buildHeading("Today I'm working on"),
+            ..._buildTaskItemsFromList(standupInfo!.today),
           ]),
+        ),
+        const AddEntry()
+      ]),
     );
   }
 }
