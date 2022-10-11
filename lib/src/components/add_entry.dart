@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '/src/models/models.dart';
+
 class AddEntry extends StatefulWidget {
   const AddEntry({Key? key}) : super(key: key);
 
@@ -14,6 +16,8 @@ class _AddEntryState extends State<AddEntry> {
   final _dateController =
       TextEditingController(text: DateTime.now().toString().substring(0, 10));
 
+  bool isValid = false;
+
   @override
   void dispose() {
     _entryController.dispose();
@@ -25,12 +29,24 @@ class _AddEntryState extends State<AddEntry> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
+      onChanged: () {
+        setState(() {
+          isValid = _formKey.currentState!.validate();
+        });
+      },
+      autovalidateMode: AutovalidateMode.always,
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Expanded(
             flex: 20,
             child: TextFormField(
               controller: _entryController,
               decoration: const InputDecoration(hintText: 'Enter a new value'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please insert a value';
+                }
+                return null;
+              },
             )),
         const Spacer(),
         Expanded(
@@ -41,28 +57,34 @@ class _AddEntryState extends State<AddEntry> {
               decoration: const InputDecoration(hintText: 'Date'),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please insert a value';
+                  return 'Please insert a date';
                 }
                 return null;
               },
               onTap: () async {
                 var date = await showDatePicker(
                     context: context,
-                    initialDate: DateTime.now(),
+                    initialDate: DateTime.parse(_dateController.text),
                     firstDate: DateTime(1900),
                     lastDate: DateTime(2100));
+
+                if (date == null) {
+                  return;
+                }
 
                 _dateController.text = date.toString().substring(0, 10);
               }),
         ),
         const Spacer(),
         IconButton(
-            onPressed: _entryController.text.isEmpty
+            onPressed: !isValid
                 ? null
                 : () {
                     if (_formKey.currentState!.validate()) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Working')));
+                      Task newTask = Task(description: _entryController.text);
+                      Data.addTask(
+                          dateOfEntry: DateTime.parse(_dateController.text),
+                          task: newTask);
                     }
                   },
             icon: const Icon(Icons.send))

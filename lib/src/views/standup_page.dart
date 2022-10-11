@@ -75,6 +75,14 @@ Widget _buildHeading(String text) {
   return Text(text, style: const TextStyle(fontSize: 28));
 }
 
-Iterable<TaskItem> _buildTaskItemsFromList(List<Task> tasks) {
+Iterable _buildTaskItemsFromList(List<Task> tasks) {
+  if (tasks.isEmpty) {
+    return [
+      const ListTile(
+        title: Text('Nothing yet...'),
+        textColor: Colors.yellow,
+      )
+    ];
+  }
   return tasks.map((task) => TaskItem(task: task));
 }
