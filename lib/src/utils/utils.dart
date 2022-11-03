@@ -12,7 +12,7 @@ String getRelativeDateHeading(DateTime date) {
       .diff(date.subDays(1).startOfWeek)
       .inDays;
 
-  if (weekDiff <= 7) {
+  if (weekDiff <= 7 && weekDiff > 0) {
     return 'Last week ${date.format("EEEE")} I worked on';
   }
 
