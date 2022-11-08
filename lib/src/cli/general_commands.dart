@@ -140,9 +140,13 @@ class CopyCommand extends Command {
 
   CopyCommand() {
     argParser.addOption('dateFrom',
-        abbr: 'f', help: 'Date to copy from.', valueHelp: 'YYYY-MM-DD');
+        abbr: 'f',
+        help: 'Date to copy from.',
+        valueHelp: 'YYYY-MM-DD or (p|prev|y|yesterday|t|today)');
     argParser.addOption('dateTo',
-        abbr: 't', help: 'Date to copy to.', valueHelp: 'YYYY-MM-DD');
+        abbr: 't',
+        help: 'Date to copy to.',
+        valueHelp: 'YYYY-MM-DD or (p|prev|y|yesterday|t|today)');
     argParser.addOption(
       'index',
       abbr: 'n',
@@ -197,7 +201,7 @@ void _addGeneralOptionsAndFlags(
   argParser.addOption('date',
       abbr: 'd',
       help: dateHelp,
-      valueHelp: 'YYYY-MM-DD',
+      valueHelp: 'YYYY-MM-DD or (p|prev|y|yesterday|t|today)',
       defaultsTo: defaultDate ? DateTime.now().format('yyyy-MM-dd') : null);
   argParser.addFlag('goal', abbr: 'g', negatable: false, help: goalHelp);
   argParser.addFlag('well', abbr: 'w', negatable: false, help: wentWellHelp);

@@ -7,8 +7,9 @@ import 'package:tint/tint.dart';
 import 'package:uuid/uuid.dart';
 import 'package:watcher/watcher.dart';
 
-import './task.dart';
+import '/src/utils/utils.dart' as utils;
 import './sprint.dart';
+import './task.dart';
 
 part 'data.g.dart';
 
@@ -156,14 +157,7 @@ class Data {
   static Future<StandupInfo> getTasksForStandup() async {
     Data data = await Data.loadDataFile();
 
-    List<DateTime> dates = data.days.keys.toList();
-    dates.sort();
-
-    var pastDateIterator =
-        dates.reversed.skipWhile((date) => date.isFuture || date.isToday);
-
-    DateTime? previousDayDate =
-        pastDateIterator.isNotEmpty ? pastDateIterator.first : null;
+    DateTime? previousDayDate = await utils.getPreviousDayDate();
 
     List<Task> previousDay = previousDayDate == null
         ? []

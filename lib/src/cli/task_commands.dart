@@ -15,7 +15,7 @@ Future<void> add(ArgResults? argResults) async {
       ? argResults!.rest.join(' ')
       : Input(prompt: 'Description', validator: isRequired).interact();
 
-  var dateOfEntry = DateTime.parse(argResults!['date']);
+  var dateOfEntry = await parseDateTime(argResults!['date']);
 
   var task = Task(description: entryDescription);
 
@@ -26,7 +26,7 @@ Future<void> add(ArgResults? argResults) async {
 
 Future<void> view(ArgResults? argResults) async {
   if (argResults?['date'] != null) {
-    return _printTasksOnDate(DateTime.parse(argResults!['date']));
+    return _printTasksOnDate(await parseDateTime(argResults!['date']));
   }
 
   return _viewTasksForStandup();
@@ -47,7 +47,7 @@ Future<void> _viewTasksForStandup() async {
 }
 
 Future<void> edit(ArgResults? argResults) async {
-  DateTime dateOfEntryToEdit = DateTime.parse(argResults!['date']);
+  DateTime dateOfEntryToEdit = await parseDateTime(argResults!['date']);
 
   List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToEdit);
 
@@ -75,7 +75,7 @@ Future<void> edit(ArgResults? argResults) async {
 }
 
 Future<void> remove(ArgResults? argResults) async {
-  DateTime dateOfEntryToRemove = DateTime.parse(argResults!['date']);
+  DateTime dateOfEntryToRemove = await parseDateTime(argResults!['date']);
 
   List<TaskWithId> tasks = await Data.getTasksOnDate(date: dateOfEntryToRemove);
 
@@ -95,7 +95,7 @@ Future<void> remove(ArgResults? argResults) async {
 }
 
 Future<void> copy(ArgResults? argResults) async {
-  DateTime dateOfEntryToCopy = DateTime.parse(argResults?['dateFrom'] ??
+  DateTime dateOfEntryToCopy = await parseDateTime(argResults?['dateFrom'] ??
       Input(
               prompt: 'Date to copy from',
               validator: isRequired,
@@ -111,7 +111,7 @@ Future<void> copy(ArgResults? argResults) async {
 
   int entryToCopyIndex = _selectedEntry(argResults, tasks);
 
-  DateTime dateToCopyEntryTo = DateTime.parse(argResults?['dateTo'] ??
+  DateTime dateToCopyEntryTo = await parseDateTime(argResults?['dateTo'] ??
       Input(
               prompt: 'Date to copy to',
               validator: isRequired,
@@ -127,12 +127,13 @@ Future<void> copy(ArgResults? argResults) async {
 }
 
 Future<void> move(ArgResults? argResults) async {
-  DateTime dateOfEntryToMoveFrom = DateTime.parse(argResults?['dateFrom'] ??
-      Input(
-              prompt: 'Date to move from',
-              validator: isRequired,
-              initialText: DateTime.now().format('yyyy-MM-dd'))
-          .interact());
+  DateTime dateOfEntryToMoveFrom = await parseDateTime(
+      argResults?['dateFrom'] ??
+          Input(
+                  prompt: 'Date to move from',
+                  validator: isRequired,
+                  initialText: DateTime.now().format('yyyy-MM-dd'))
+              .interact());
 
   List<TaskWithId> tasks =
       await Data.getTasksOnDate(date: dateOfEntryToMoveFrom);
@@ -144,7 +145,7 @@ Future<void> move(ArgResults? argResults) async {
 
   int entryToMoveIndex = _selectedEntry(argResults, tasks);
 
-  DateTime dateOfEntryToMoveTo = DateTime.parse(argResults?['dateTo'] ??
+  DateTime dateOfEntryToMoveTo = await parseDateTime(argResults?['dateTo'] ??
       Input(
               prompt: 'Date to move to',
               validator: isRequired,

@@ -1,4 +1,5 @@
 import 'package:dart_date/dart_date.dart';
+import 'package:standup_app/src/models/data.dart';
 
 String getRelativeDateHeading(DateTime date) {
   if (date.isYesterday) {
@@ -23,4 +24,19 @@ String getRelativeDateHeading(DateTime date) {
   }
 
   return 'On ${date.format("EEEE")} I worked on';
+}
+
+Future<DateTime?> getPreviousDayDate() async {
+  Data data = await Data.loadDataFile();
+
+  List<DateTime> dates = data.days.keys.toList();
+  dates.sort();
+
+  var pastDateIterator =
+      dates.reversed.skipWhile((date) => date.isFuture || date.isToday);
+
+  DateTime? previousDayDate =
+      pastDateIterator.isNotEmpty ? pastDateIterator.first : null;
+
+  return previousDayDate;
 }
