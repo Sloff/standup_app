@@ -110,3 +110,4 @@ TODO
 Special thanks to Entelect and their Tech Accelerator project that supplied the initial time and resources needed to start this project.
 
 ![Tech Accelerator](/assets/images/tech_accelerator.png)
+
